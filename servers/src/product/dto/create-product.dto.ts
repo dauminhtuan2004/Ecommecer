@@ -1,0 +1,47 @@
+import { IsString, IsNumber, IsPositive, IsOptional, IsInt } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';  // Thêm import cho Swagger
+
+export class CreateProductDto {
+  @ApiProperty({ 
+    example: 'Áo thun nam', 
+    description: 'Tên sản phẩm', 
+    required: true 
+  })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ 
+    example: 'Áo thun cotton thoải mái, size M-XL', 
+    description: 'Mô tả sản phẩm (tùy chọn)', 
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({ 
+    example: 200000, 
+    description: 'Giá gốc (VND)', 
+    required: true 
+  })
+  @IsNumber()
+  @IsPositive()
+  basePrice: number;
+
+  @ApiProperty({ 
+    example: 1, 
+    description: 'ID category (phải tồn tại)', 
+    required: true 
+  })
+  @IsInt()
+  categoryId: number;
+
+  @ApiProperty({ 
+    example: 1, 
+    description: 'ID brand (tùy chọn)', 
+    required: false 
+  })
+  @IsOptional()
+  @IsInt()
+  brandId?: number;
+}
