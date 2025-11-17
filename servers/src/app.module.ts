@@ -2,13 +2,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma/prisma.service';
-import { AuthModule } from './auth/auth.module';  // Import Auth cho login/register
-import { UserModule } from './user/user.module';  // Import User cho CRUD
-import { ProductModule } from './product/product.module';  // Import Product nếu có
-import { CartModule } from './cart/cart.module';  // Import Cart nếu có
-import { OrderModule } from './order/order.module';  // Import Order nếu có
-import { UploadModule } from './upload/upload.module';  // Import Upload nếu có
-import { CacheModule } from './cache/cache.module';  // Import Redis cache nếu có
+import { AuthModule } from './auth/auth.module';  
+import { UserModule } from './user/user.module';  
+import { ProductModule } from './product/product.module';  
+import { CartModule } from './cart/cart.module';  
+import { OrderModule } from './order/order.module'; 
+import { UploadModule } from './upload/upload.module'; 
+import { CacheModule } from './cache/cache.module';  
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { CacheModule } from './cache/cache.module';  // Import Redis cache nếu
     CartModule,
     OrderModule,
     UploadModule,
-    CacheModule
+    CacheModule,
+    CategoryModule
   ],
   providers: [PrismaService],
   exports: [PrismaService],

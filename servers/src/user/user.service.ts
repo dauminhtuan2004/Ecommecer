@@ -22,7 +22,6 @@ export class UserService {
   }
 
   async findAll(query: QueryUserDto): Promise<User[]> {
-    // Fix: Destructuring với defaults để tránh undefined (TS18048)
     const { page = 1, limit = 10, role } = query;
     const skip = (page - 1) * limit;
     return this.prisma.user.findMany({
@@ -58,16 +57,14 @@ export class UserService {
   }
 
   async updateAddress(id: number, data: UpdateAddressDto): Promise<any> {
-    // Fix: Tách query sync để lấy userId trước (where clause không hỗ trợ async)
     const address = await this.prisma.address.findUnique({ where: { id } });
     if (!address) throw new Error('Address not found');
 
     if (data.isDefault) {
-      // Update all other addresses của cùng user thành isDefault = false
       await this.prisma.address.updateMany({ 
         where: { 
           userId: address.userId, 
-          id: { not: id },  // Không update address hiện tại
+          id: { not: id }, 
           isDefault: true 
         }, 
         data: { isDefault: false } 

@@ -1,4 +1,6 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';  
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -8,20 +10,24 @@ import { CartService } from '../cart/cart.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private prisma: PrismaService, private cartService: CartService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cartService: CartService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,  
+  ) {}
 
   async create(userId: number, dto: CreateOrderDto): Promise<any> {
     const cart = await this.cartService.getCart(userId);
     if (cart.cartItems.length === 0) throw new BadRequestException('Cart empty');
 
-    let discount: any = null;  
+    let discount: any = null;
     if (dto.discountCode) {
       discount = await this.prisma.discount.findUnique({ where: { code: dto.discountCode } });
       if (!discount || discount.endDate < new Date()) throw new BadRequestException('Invalid discount');
     }
 
     const totalItems = cart.cartItems.reduce((sum, item) => sum + (item.quantity * item.variant.price), 0);
-    const taxAmount = totalItems * 0.1; 
+    const taxAmount = totalItems * 0.1;
     const total = totalItems + taxAmount;
     let discountedTotal = total;
     if (discount) {
@@ -36,7 +42,7 @@ export class OrderService {
         shippingMethodId: dto.shippingMethodId,
         total: discountedTotal,
         taxAmount,
-        discountId: discount?.id, 
+        discountId: discount?.id,
         status: 'PENDING',
         orderItems: {
           create: cart.cartItems.map(item => ({
@@ -48,36 +54,82 @@ export class OrderService {
       },
       include: { orderItems: { include: { variant: true } }, payment: true },
     });
+
     await this.cartService.clearCart(userId);
+    await this.cacheManager.del(`orders:${userId}:all`);
+    console.log(`Cache invalidated for orders of user ${userId} after create`);
 
     return order;
   }
 
   async findAll(userId: number, query: QueryOrderDto): Promise<any> {
+    const cacheKey = `orders:${userId}:${JSON.stringify(query)}`;
+    
+    let orders = await this.cacheManager.get(cacheKey);
+    if (orders) {
+      console.log(`Cache hit for orders key: ${cacheKey}`);
+      return orders;
+    }
+
+    console.log(`Cache miss for orders key: ${cacheKey} - querying DB`);
+
     const { page = 1, limit = 10, status } = query;
     const skip = (page - 1) * limit;
-    return this.prisma.order.findMany({
+    orders = await this.prisma.order.findMany({
       where: { userId, status },
       skip,
       take: limit,
       include: { orderItems: { include: { variant: true } }, payment: true, address: true },
       orderBy: { createdAt: 'desc' },
     });
+
+    await this.cacheManager.set(cacheKey, orders, 1800);
+    console.log(`Cache set for orders key: ${cacheKey}`);
+
+    return orders;
   }
 
   async findOne(id: number): Promise<any> {
-    return this.prisma.order.findUnique({
+    const cacheKey = `order:${id}`;
+    let order = await this.cacheManager.get(cacheKey);
+    if (order) {
+      console.log(`Single cache hit for order ${id}`);
+      return order;
+    }
+
+    console.log(`Single cache miss for order ${id} - querying DB`);
+
+    order = await this.prisma.order.findUnique({
       where: { id },
       include: { orderItems: { include: { variant: true } }, payment: true, address: true, discount: true },
     });
+
+    if (order) {
+      await this.cacheManager.set(cacheKey, order, 1800);  
+      console.log(`Single cache set for order ${id}`);
+    }
+
+    return order;
   }
 
   async update(id: number, dto: UpdateOrderDto): Promise<any> {
-    return this.prisma.order.update({ where: { id }, data: dto });
+    const order = await this.prisma.order.update({ where: { id }, data: dto });
+    await this.cacheManager.del(`order:${id}`);
+    await this.cacheManager.del(`orders:${order.userId}:all`);
+    console.log(`Cache invalidated for order ${id} after update`);
+
+    return order;
   }
 
   async remove(id: number): Promise<any> {
-    return this.prisma.order.delete({ where: { id } });
+    const order = await this.prisma.order.findUnique({ where: { id } });
+    if (!order) throw new NotFoundException('Order not found');
+    const removed = await this.prisma.order.delete({ where: { id } });
+    await this.cacheManager.del(`order:${id}`);
+    await this.cacheManager.del(`orders:${order.userId}:all`);
+    console.log(`Cache invalidated for order ${id} after remove`);
+
+    return removed;
   }
 
   async applyDiscount(orderId: number, dto: ApplyDiscountDto): Promise<any> {
@@ -85,6 +137,15 @@ export class OrderService {
     if (!order) throw new NotFoundException('Order not found');
     const discount = await this.prisma.discount.findUnique({ where: { code: dto.code } });
     if (!discount) throw new BadRequestException('Invalid discount');
-    return { message: 'Discount applied', discount };
+    const newTotal = order.total * (1 - (discount.percentage || 0) / 100) - (discount.fixedAmount || 0);
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { total: newTotal, discountId: discount.id },
+    });
+    await this.cacheManager.del(`order:${orderId}`);
+    await this.cacheManager.del(`orders:${order.userId}:all`);
+    console.log(`Cache invalidated for order ${orderId} after apply discount`);
+
+    return { message: 'Discount applied', discount, updatedOrder };
   }
 }

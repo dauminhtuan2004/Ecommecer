@@ -1,5 +1,5 @@
 import { IsString, IsPhoneNumber, IsOptional, IsBoolean } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';  // Thêm import
+import { ApiProperty } from '@nestjs/swagger';  
 
 export class CreateAddressDto {
   @ApiProperty({ 

@@ -9,11 +9,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
 
-@ApiTags('Users')  // Group
-@ApiBearerAuth('Authorization')  // Require token
+@ApiTags('Users') 
+@ApiBearerAuth('Authorization')  
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))  // Global validation
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))  
 export class UserController {
   constructor(private userService: UserService) {}
 
