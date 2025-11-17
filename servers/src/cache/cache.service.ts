@@ -1,13 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';  // Fix: Import type chỉ cho Cache
+import type { Cache } from 'cache-manager';  
 import { ConfigService } from '@nestjs/config';
 import { redisConfig } from '../config/redis.config';
 
 @Injectable()
 export class CacheService {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,  // Giờ OK với type-only
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,  
     private configService: ConfigService,
   ) {}
 

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -8,6 +8,8 @@ import { QueryUserDto } from './dto/query-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
+import { CreateAddressDto } from './dto/create-address.dto';  // Thêm import
+import { UpdateAddressDto } from './dto/update-address.dto';  // Thêm import
 
 @ApiTags('Users') 
 @ApiBearerAuth('Authorization')  
@@ -65,5 +67,29 @@ export class UserController {
       throw new Error('Confirm deletion required');
     }
     return this.userService.remove(+id);
+  }
+
+  // Thêm: Create address
+  @Post(':userId/address')
+  @ApiOperation({ summary: 'Create new address for user' })
+  @ApiParam({ name: 'userId', description: 'ID user' })
+  @ApiBody({ type: CreateAddressDto })
+  @ApiResponse({ status: 201, description: 'Address created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  createAddress(@Param('userId') userId: string, @Body() createAddressDto: CreateAddressDto) {
+    return this.userService.addAddress(+userId, createAddressDto);
+  }
+
+  // Thêm: Update address
+  @Put(':userId/address/:addressId')
+  @ApiOperation({ summary: 'Update address for user' })
+  @ApiParam({ name: 'userId', description: 'ID user' })
+  @ApiParam({ name: 'addressId', description: 'ID address' })
+  @ApiBody({ type: UpdateAddressDto })
+  @ApiResponse({ status: 200, description: 'Address updated successfully' })
+  @ApiResponse({ status: 404, description: 'Address not found' })
+  updateAddress(@Param('userId') userId: string, @Param('addressId') addressId: string, @Body() updateAddressDto: UpdateAddressDto) {
+    return this.userService.updateAddress(+addressId, updateAddressDto);
   }
 }

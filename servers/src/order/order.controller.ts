@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, Request,Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -9,41 +10,80 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { ApplyDiscountDto } from './dto/apply-discount.dto';
 import { DeleteOrderDto } from './dto/delete-order.dto';
 
+@ApiTags('Orders')
+@ApiBearerAuth('Authorization')
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))  
 export class OrderController {
   constructor(private orderService: OrderService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create new order from cart' })
+  @ApiBody({ type: CreateOrderDto })
+  @ApiResponse({ status: 201, description: 'Order created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request or cart empty' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Request() req, @Body() body: CreateOrderDto) {
     return this.orderService.create(req.user.userId, body);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get user orders' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] })
+  @ApiResponse({ status: 200, description: 'List of orders' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAll(@Request() req, @Query() query: QueryOrderDto) {
     return this.orderService.findAll(req.user.userId, query);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get order by ID' })
+  @ApiParam({ name: 'id', description: 'ID order', type: Number })
+  @ApiResponse({ status: 200, description: 'Order details' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(+id);
   }
 
   @Put(':id')
   @Roles('ADMIN')
+  @ApiOperation({ summary: 'Update order status (Admin only)' })
+  @ApiParam({ name: 'id', description: 'ID order', type: Number })
+  @ApiBody({ type: UpdateOrderDto })
+  @ApiResponse({ status: 200, description: 'Order updated successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   update(@Param('id') id: string, @Body() body: UpdateOrderDto) {
     return this.orderService.update(+id, body);
   }
 
   @Post(':id/discount')
+  @ApiOperation({ summary: 'Apply discount to order' })
+  @ApiParam({ name: 'id', description: 'ID order', type: Number })
+  @ApiBody({ type: ApplyDiscountDto })
+  @ApiResponse({ status: 200, description: 'Discount applied' })
+  @ApiResponse({ status: 400, description: 'Invalid discount' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
   applyDiscount(@Param('id') id: string, @Body() body: ApplyDiscountDto) {
     return this.orderService.applyDiscount(+id, body);
   }
 
   @Delete(':id')
   @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete order (Admin only)' })
+  @ApiParam({ name: 'id', description: 'ID order', type: Number })
+  @ApiBody({ type: DeleteOrderDto })
+  @ApiResponse({ status: 200, description: 'Order deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   remove(@Param('id') id: string, @Body() body: DeleteOrderDto) {
-    if (!body.confirm) throw new Error('Confirm deletion');
+    if (!body.confirm) {
+      throw new Error('Confirm deletion required');
+    }
     return this.orderService.remove(+id);
   }
 }
