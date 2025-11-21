@@ -13,21 +13,26 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: configService.get('GOOGLE_CLIENT_ID'),
       clientSecret: configService.get('GOOGLE_CLIENT_SECRET'),
-      callbackURL: 'http://localhost:5000/api/auth/google-login/callback',  // Fix: Match Console URI (có /api và google-login)
+      callbackURL: 'http://localhost:5000/api/auth/google-login/callback', // Fix: Xóa /api, match route /auth/google-login/callback
       scope: ['email', 'profile'],
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback): Promise<any> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: VerifyCallback,
+  ): Promise<any> {
     const { emails, displayName } = profile;
     const email = emails[0].value;
     let user = await this.userService.findByEmail(email);
     if (!user) {
-      user = await this.userService.create({ 
-        email, 
-        name: displayName, 
+      user = await this.userService.create({
+        email,
+        name: displayName,
         role: 'CUSTOMER',
-        password: 'google-oauth',  // Placeholder
+        password: 'google-oauth', // Placeholder
       });
     }
     done(null, { userId: user.id, email: user.email, role: user.role });

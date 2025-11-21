@@ -1,11 +1,28 @@
-import { Controller, Post, Body, UsePipes, ValidationPipe, Param, Query, Get, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UsePipes,
+  ValidationPipe,
+  Param,
+  Query,
+  Get,
+  Res,
+} from '@nestjs/common';
 import type { Response } from 'express';
-import { UseGuards } from '@nestjs/common';  // Fix: Import UseGuards
-import { AuthGuard } from '@nestjs/passport';  // Import AuthGuard cho Google
-import { Req } from '@nestjs/common';  // Fix: Import Req decorator
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { UseGuards } from '@nestjs/common'; // Fix: Import UseGuards
+import { AuthGuard } from '@nestjs/passport'; // Import AuthGuard cho Google
+import { Req } from '@nestjs/common'; // Fix: Import Req decorator
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { JwtService } from '@nestjs/jwt';  // Fix: Import JwtService để sign token
+import { JwtService } from '@nestjs/jwt'; // Fix: Import JwtService để sign token
 import { RegisterDto } from './dto/register-dto';
 import { LoginDto } from './dto/login-dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/forgot-password.dto';
@@ -16,7 +33,7 @@ import { ForgotPasswordDto, ResetPasswordDto } from './dto/forgot-password.dto';
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private jwtService: JwtService,  // Fix: Inject JwtService cho token sign
+    private jwtService: JwtService, // Fix: Inject JwtService cho token sign
   ) {}
 
   @Post('register')
@@ -34,7 +51,10 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
     return this.authService.login(user);
   }
 
@@ -51,7 +71,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset password form (GET for link)' })
   @ApiParam({ name: 'token', description: 'Reset token from email' })
   @ApiQuery({ name: 'email', description: 'Email user', required: true })
-  resetPasswordForm(@Param('token') token: string, @Query('email') email: string, @Res() res: Response) {
+  resetPasswordForm(
+    @Param('token') token: string,
+    @Query('email') email: string,
+    @Res() res: Response,
+  ) {
     res.send(`
       <html>
         <body>
@@ -79,25 +103,20 @@ export class AuthController {
   ) {
     return this.authService.resetPassword(token, email, resetPasswordDto);
   }
-
   @Get('google')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Login with Google' })
   @ApiResponse({ status: 302, description: 'Redirect to Google' })
-  googleAuth() {
-    // Passport tự redirect
-  }
+  googleAuth() {}
 
-  // Thêm: Google OAuth callback - Return JWT token (match /api/auth/google-login/callback)
-  @Get('/google-login/callback')  // Fix: Route '/google-login/callback' để match full path /api/auth/google-login/callback
+  @Get('google-login/callback')  // Full path /auth/api/google-login/callback – match nếu Swagger prefix /api
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback' })
   @ApiResponse({ status: 200, description: 'Google login successful, return token' })
   googleAuthRedirect(@Req() req: any, @Res() res: Response) {
-    const user = req.user;  // Từ GoogleStrategy.validate
+    const user = req.user;
     const payload = { sub: user.userId, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
-    // Redirect frontend với token (hoặc return JSON)
-    res.json({ access_token: token, user });  // JSON cho test, hoặc res.redirect(`${FRONTEND_URL}?token=${token}`);
+    res.json({ access_token: token, user });
   }
 }
