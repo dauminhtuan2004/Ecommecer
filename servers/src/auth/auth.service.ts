@@ -1,3 +1,4 @@
+// src/auth/auth.service.ts
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -6,7 +7,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register-dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/forgot-password.dto';
-import { UpdateUserResetDto } from '../user/dto/user-reset.dto';  // Import DTO mới (path từ auth/dto)
+import { UpdateUserResetDto } from '../user/dto/user-reset.dto';
 
 @Injectable()
 export class AuthService {
@@ -55,38 +56,69 @@ export class AuthService {
     if (!user) throw new BadRequestException('User not found');
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();  // Fix: toISOString() để string ISO
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+    console.log('Forgot Password - User ID:', user.id);
+    console.log('Generated token:', token);
+    console.log('Expires:', expires);
 
     const resetData: UpdateUserResetDto = { 
       resetPasswordToken: token, 
-      resetPasswordExpires: expires  // Fix: string ISO
+      resetPasswordExpires: expires.toISOString()
     };
-    await this.userService.update(user.id, resetData);
 
+    await this.userService.updateResetToken(user.id, resetData);
+
+    const verifyUser = await this.userService.findByEmail(email);
+    if (verifyUser) {
+      console.log('Verify after update - Token:', verifyUser.resetPasswordToken);
+      console.log('Verify after update - Expires:', verifyUser.resetPasswordExpires);
+    } else {
+      console.log('ERROR: User not found after update!');
+    }
+
+    const resetUrl = `http://localhost:5000/api/auth/reset-password/${token}?email=${email}`;
+    console.log('Reset URL:', resetUrl);
+    
     await this.mailerService.sendMail({
       to: email,
       subject: 'Reset Password - E-commerce',
-      text: `Click link để reset: http://localhost:5000/auth/reset-password/${token}?email=${email}`,
-      html: `<p>Click <a href="http://localhost:5000/auth/reset-password/${token}?email=${email}">đây</a> để reset mật khẩu (expire 1 giờ).</p>`,
+      html: `<p>Click <a href="${resetUrl}">đây</a> để reset mật khẩu (expire 1 giờ).</p>`,
     });
 
     return { message: 'Reset email sent' };
   }
 
-  async resetPassword(token: string, email: string, resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
-    const { password } = resetPasswordDto;
+  async resetPassword(token: string, email: string, password: string): Promise<{ message: string }> {
+    console.log('Reset Password Debug Start');
+    console.log('Email from form:', email);
+    console.log('Token from URL:', token);
+    console.log('Current time:', new Date().toISOString());
+    
     const user = await this.userService.findByEmail(email);
-    if (!user || user.resetPasswordToken !== token || !user.resetPasswordExpires || new Date(user.resetPasswordExpires) < new Date()) {  // Fix: new Date() cho string compare
+    console.log('User found:', !!user);
+    
+    if (user) {
+      if (user.resetPasswordExpires) {
+        const expiresDate = new Date(user.resetPasswordExpires);
+        const now = new Date();
+        console.log('Time until expiry:', expiresDate.getTime() - now.getTime(), 'ms');
+        console.log('Is expired?', expiresDate < now);
+      }
+    }
+    
+    console.log('Reset Password Debug End');
+    
+    if (!user || 
+        !user.resetPasswordToken ||
+        user.resetPasswordToken !== token || 
+        !user.resetPasswordExpires || 
+        new Date(user.resetPasswordExpires) < new Date()
+    ) {
       throw new BadRequestException('Invalid or expired token');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const resetData: UpdateUserResetDto = { 
-      password: hashedPassword, 
-      resetPasswordToken: null,  // Fix: null OK với optional union
-      resetPasswordExpires: null  // Fix: null OK với optional union
-    };
-    await this.userService.update(user.id, resetData);
+    await this.userService.resetPassword(user.id, password);
 
     return { message: 'Password reset successfully' };
   }

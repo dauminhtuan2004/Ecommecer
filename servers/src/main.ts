@@ -10,11 +10,10 @@ async function bootstrap() {
   app.use(helmet());
   app.setGlobalPrefix('api');
   app.enableCors({
-    // Fix: Enable CORS cho all origins (dev) – allow token header
-    origin: '*', // Hoặc ['http://localhost:5000', 'http://localhost:5173'] cho frontend
+    origin: '*',
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Authorization, Content-Type', // Cho Bearer token
+    allowedHeaders: 'Authorization, Content-Type', 
   });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -42,7 +41,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   const logger = new Logger('Bootstrap');
-  const port = process.env.PORT || 5000; // Dùng PORT từ .env
+  const port = process.env.PORT || 5000; 
   await app.listen(port);
   logger.log(`App running on http://localhost:${port}`);
   logger.log(`Swagger docs at http://localhost:${port}/api`);

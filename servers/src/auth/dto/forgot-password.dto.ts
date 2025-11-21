@@ -1,3 +1,4 @@
+// src/auth/dto/forgot-password.dto.ts
 import { IsEmail, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -12,6 +13,14 @@ export class ForgotPasswordDto {
 }
 
 export class ResetPasswordDto {
+  @ApiProperty({ 
+    example: 'user@example.com', 
+    description: 'Email của user', 
+    required: true 
+  })
+  @IsEmail()
+  email: string;
+
   @ApiProperty({ 
     example: 'newpassword123', 
     description: 'Mật khẩu mới (tối thiểu 6 ký tự)', 
