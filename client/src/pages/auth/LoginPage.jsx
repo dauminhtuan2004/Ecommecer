@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
-  const { handleLogin, loading: isLoading } = useAuth(); // Dùng hook
+  const { handleLogin, loading: isLoading } = useAuth(); 
   const navigate = useNavigate();
 
   const handleChange = (e) => {

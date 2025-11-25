@@ -1,43 +1,54 @@
-// src/hooks/useAuth.js
-import { useState } from 'react';
-import authService from '../services/authService';
+import { useAuth as useAuthContext } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
+// Wrapper hook: exposes context and provides aliases expected by components
 export const useAuth = () => {
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const context = useAuthContext();
+  const navigate = useNavigate();
 
-  const handleRegister = async (data) => {
-    setLoading(true);
-    setMessage('');
-    try {
-      const response = await authService.register(data);
-      setMessage(response.message || 'Đăng ký thành công!');
-      return response;
-    } catch (error) {
-      setMessage(error.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleLogin = async (credentials) => {
+    const data = await context.login(credentials);
+    const role = data?.user?.role;
+    if (role === 'ADMIN') navigate('/admin-dashboard');
+    else navigate('/');
+    return data;
   };
 
-  const handleLogin = async (data) => {
-    setLoading(true);
-    setMessage('');
-    try {
-      const response = await authService.login(data);
-      const role = response.user.role;
-      setMessage(response.message || 'Đăng nhập thành công!');
-      if (role === 'CUSTOMER') window.location.href = '/customer-dashboard';
-      else if (role === 'ADMIN') window.location.href = '/admin-dashboard';
-      return response;
-    } catch (error) {
-      setMessage(error.message);
-    } finally {
-      setLoading(false);
-    }
+  const handleRegister = async (userData) => {
+    const data = await context.register(userData);
+    return data;
   };
 
-  const handleLogout = () => authService.logout();
+  const handleLogout = () => {
+    context.logout();
+    navigate('/login');
+  };
 
-  return { handleRegister, handleLogin, handleLogout, loading, message, setMessage };
+  return {
+    ...context,
+    handleLogin,
+    handleRegister,
+    handleLogout,
+  };
 };
+
+export const useIsAuthenticated = () => {
+  const { isAuthenticated } = useAuthContext();
+  return isAuthenticated;
+};
+
+export const useIsAdmin = () => {
+  const { isAdmin } = useAuthContext();
+  return isAdmin();
+};
+
+export const useCurrentUser = () => {
+  const { user } = useAuthContext();
+  return user;
+};
+
+export const useAuthLoading = () => {
+  const { loading } = useAuthContext();
+  return loading;
+};
+export default useAuth;

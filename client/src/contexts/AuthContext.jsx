@@ -45,6 +45,11 @@ export const AuthProvider = ({ children }) => {
     toast.success('Đăng xuất thành công!');
   };
 
+  // ✅ THÊM: handleLogout function
+  const handleLogout = () => {
+    logout();
+  };
+
   const updateProfile = async (userData) => {
     try {
       const data = await authService.updateProfile(userData);
@@ -77,6 +82,7 @@ export const AuthProvider = ({ children }) => {
         register,
         login,
         logout,
+        handleLogout, // ✅ THÊM vào value
         updateProfile,
         changePassword,
         isAdmin,

@@ -1,10 +1,10 @@
 // src/pages/Home/HomePage.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';  // Để test logout
+import { useAuth } from '../../contexts/AuthContext'; // ✅ Đảm bảo import đúng path
 
 const HomePage = () => {
-  const { handleLogout, user } = useAuth();  // Nếu có user từ localStorage
+  const { logout, user } = useAuth(); // ✅ Sử dụng 'logout' thay vì 'handleLogout'
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -15,7 +15,7 @@ const HomePage = () => {
             <div>
               <p>Xin chào, {user.name || user.email}! (Role: {user.role})</p>
               <button 
-                onClick={handleLogout} 
+                onClick={logout} // ✅ Sử dụng logout
                 className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
               >
                 Logout
