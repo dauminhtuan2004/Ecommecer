@@ -18,6 +18,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/" element={<HomePage />} />
       <Route path="/admin-dashboard" element={<HomePage />} />
 
       {/* Auth Routes */}
@@ -27,10 +28,11 @@ const AppRoutes = () => {
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
       {/* Protected (placeholder tạm) */}
-      <Route path="/account" element={<ProtectedRoute><div>Account Page (Login để xem)</div></ProtectedRoute>} />
+      {/* <Route path="/account" element={<ProtectedRoute><div>Account Page (Login để xem)</div></ProtectedRoute>} /> */}
 
       {/* 404 */}
       {/* <Route path="*" element={<NotFoundPage />} /> */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

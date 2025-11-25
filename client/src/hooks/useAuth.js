@@ -27,7 +27,7 @@ export const useAuth = () => {
       const response = await authService.login(data);
       const role = response.user.role;
       setMessage(response.message || 'Đăng nhập thành công!');
-      if (role === 'CUSTOMER') window.location.href = '/';
+      if (role === 'CUSTOMER') window.location.href = '/customer-dashboard';
       else if (role === 'ADMIN') window.location.href = '/admin-dashboard';
       return response;
     } catch (error) {
