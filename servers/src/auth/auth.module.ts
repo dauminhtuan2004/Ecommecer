@@ -16,7 +16,7 @@ import { UserModule } from '../user/user.module';
       secret: process.env.JWT_SECRET || 'supersecret',
       signOptions: { expiresIn: '24h' },
     }),
-    MailerModule.forRootAsync({  // Thêm Mailer cho email reset
+    MailerModule.forRootAsync({  
       useFactory: () => ({
         transport: {
           service: process.env.EMAIL_SERVICE || 'gmail',

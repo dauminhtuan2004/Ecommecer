@@ -1,17 +1,11 @@
-// src/components/layout/Layout.jsx
-import Header from './Header/Header';
-import Footer from './Footer/Footer';
+import React from 'react';
 
 const Layout = ({ children }) => {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1 bg-gray-50">
-        {children}
-      </main>
-      <Footer />
-    </div>
-  );
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full">{children}</div>
+        </div>
+    );
 };
 
 export default Layout;

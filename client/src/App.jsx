@@ -1,13 +1,20 @@
-import { BrowserRouter } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import AppRoutes from './routes/AppRoutes';
+// src/App.jsx (Cập nhật để wrap routes với AuthProvider)
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import  AuthProvider from './contexts/AuthContext';
+import  AppRoutes  from './routes/AppRoutes';
+import  Layout  from './components/layouts/Layout'; // Giả sử có Layout chung
+import './index.css'; // Tailwind
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-      <Toaster position="top-right" />
-    </BrowserRouter>
+    <Router>
+      <AuthProvider>
+        <Layout>
+          <AppRoutes />
+        </Layout>
+      </AuthProvider>
+    </Router>
   );
 }
 
