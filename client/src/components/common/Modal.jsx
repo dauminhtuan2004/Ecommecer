@@ -27,7 +27,7 @@ const Modal = ({
     >
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-opacity-50 transition-opacity"
         onClick={onClose}
       ></div>
 
