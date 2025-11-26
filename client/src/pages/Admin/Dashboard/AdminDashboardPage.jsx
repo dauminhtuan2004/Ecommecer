@@ -1,6 +1,6 @@
 // src/pages/Admin/AdminDashboardPage.jsx
 import React, { useState, useEffect } from 'react';
-import Layout from '../../../components/layouts/Layout';
+// import Layout from '../../../components/l';
 import AdminRoute from '../../../routes/AdminRoute';
 import StatsCard from '../../../components/admin/Dashboard/StatsCard';
 import SalesChart from '../../../components/admin/Dashboard/SalesChart';
@@ -27,7 +27,7 @@ const AdminDashboardPage = () => {
 
   return (
     <AdminRoute>
-      <Layout showSidebar={true}>
+      {/* <Layout showSidebar={true}> */}
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -55,7 +55,7 @@ const AdminDashboardPage = () => {
             <RecentOrders orders={recentOrders} />
           </div>
         </div>
-      </Layout>
+      {/* </Layout> */}
     </AdminRoute>
   );
 };
