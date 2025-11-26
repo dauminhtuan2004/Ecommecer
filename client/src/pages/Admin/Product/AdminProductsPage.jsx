@@ -1,4 +1,4 @@
-// src/pages/Admin/AdminProductsPage.jsx
+// src/pages/Admin/AdminProductsPage.jsx (bổ sung edit, delete, bulk delete)
 import { useState, useEffect } from 'react';
 import { 
   Search, Plus, Filter, MoreVertical, Edit, Eye, 
@@ -6,9 +6,11 @@ import {
 } from 'lucide-react';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
-// import Modal from '../../../components/common/Modal';
+import Modal from '../../../components/common/Modal';  // Import Modal
 import productService from '../../../services/productService';
 import toast from 'react-hot-toast';
+import ProductTable from '../../../components/admin/Product/ProductTable';  // Import table component
+import ProductForm from '../../../components/admin/Product/ProductForm';  // Import form component
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -21,6 +23,8 @@ const AdminProductsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);  // Thêm cho edit
+  const [showForm, setShowForm] = useState(false);  // Modal form cho edit/create
 
   // Load products
   const loadProducts = async () => {
@@ -33,13 +37,15 @@ const AdminProductsPage = () => {
         categoryId: selectedCategory,
       });
       
-      // API trả về array trực tiếp hoặc object với data?
-      const productsData = Array.isArray(response) ? response : response.data;
-      setProducts(productsData || []);
+      // Handle response (array hoặc { data })
+      const productsData = Array.isArray(response.data) ? response.data : response.data || [];
+      setProducts(productsData);
       
-      // Calculate total pages (giả sử có total trong response)
+      // Total pages (giả sử backend trả total, hoặc tính từ length nếu không)
       if (response.total) {
         setTotalPages(Math.ceil(response.total / 10));
+      } else {
+        setTotalPages(1);
       }
     } catch (error) {
       console.error('Error loading products:', error);
@@ -54,8 +60,8 @@ const AdminProductsPage = () => {
   const loadCategories = async () => {
     try {
       const response = await productService.getCategories();
-      const categoriesData = Array.isArray(response) ? response : response.data;
-      setCategories(categoriesData || []);
+      const categoriesData = Array.isArray(response.data) ? response.data : response.data || [];
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading categories:', error);
     }
@@ -67,14 +73,15 @@ const AdminProductsPage = () => {
     loadCategories();
   }, []);
 
-  // Reload when filters change
+  // Reload when filters change (debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
+      setPage(1);  // Reset page khi search/filter
       loadProducts();
-    }, 300); // Debounce search
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, selectedCategory, page]);
+  }, [search, selectedCategory]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -103,15 +110,19 @@ const AdminProductsPage = () => {
   };
 
   const handleSelectProduct = (productId) => {
-    setSelectedProducts(prev => {
-      if (prev.includes(productId)) {
-        return prev.filter(id => id !== productId);
-      }
-      return [...prev, productId];
-    });
+    setSelectedProducts(prev => 
+      prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
+    );
   };
 
-  const handleDelete = async (product) => {
+  // SỬA: Handle edit product
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setShowForm(true);
+  };
+
+  // XÓA: Single delete
+  const handleDelete = (product) => {
     setProductToDelete(product);
     setDeleteModalOpen(true);
   };
@@ -124,19 +135,18 @@ const AdminProductsPage = () => {
       toast.success(`Đã xóa sản phẩm "${productToDelete.name}"`);
       setDeleteModalOpen(false);
       setProductToDelete(null);
-      loadProducts(); // Reload list
+      loadProducts();  // Refresh list
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error(error.response?.data?.message || 'Không thể xóa sản phẩm');
     }
   };
 
+  // XÓA: Bulk delete
   const handleBulkDelete = async () => {
     if (selectedProducts.length === 0) return;
 
-    if (!confirm(`Bạn có chắc muốn xóa ${selectedProducts.length} sản phẩm?`)) {
-      return;
-    }
+    if (!confirm(`Bạn có chắc muốn xóa ${selectedProducts.length} sản phẩm?`)) return;
 
     try {
       await productService.bulkDelete(selectedProducts);
@@ -149,6 +159,7 @@ const AdminProductsPage = () => {
     }
   };
 
+  // NHÂN BẢN: Duplicate product
   const handleDuplicate = async (product) => {
     try {
       const duplicateData = {
@@ -157,6 +168,7 @@ const AdminProductsPage = () => {
         basePrice: product.basePrice,
         categoryId: product.categoryId,
         brandId: product.brandId,
+        stock: product.stock,
       };
       
       await productService.create(duplicateData);
@@ -168,10 +180,28 @@ const AdminProductsPage = () => {
     }
   };
 
+  // CẬP NHẬT: Handle save from form (create/update)
+  const handleSaveProduct = async (productData) => {
+    try {
+      if (editingProduct) {
+        await productService.update(editingProduct.id, productData);
+        toast.success('Cập nhật sản phẩm thành công!');
+      } else {
+        await productService.create(productData);
+        toast.success('Tạo sản phẩm mới thành công!');
+      }
+      setShowForm(false);
+      setEditingProduct(null);
+      loadProducts();  // Refresh
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Lưu sản phẩm thất bại');
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
-        {/* Skeleton Loading */}
+        {/* Skeleton */}
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -274,7 +304,10 @@ const AdminProductsPage = () => {
               <Filter size={20} />
             </button>
 
-            <Button variant="primary" onClick={() => window.location.href = '/admin/products/create'}>
+            <Button variant="primary" onClick={() => {
+              setEditingProduct(null);
+              setShowForm(true);
+            }}>
               <Plus size={20} className="mr-2" />
               Add Product
             </Button>
@@ -297,209 +330,53 @@ const AdminProductsPage = () => {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {products.length === 0 ? (
-          <div className="text-center py-16">
-            <Package size={64} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-            <p className="text-gray-600 mb-6">Try adjusting your search or filters</p>
-            <Button variant="primary">
-              <Plus size={20} className="mr-2" />
-              Add First Product
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left w-12">
-                      <input
-                        type="checkbox"
-                        checked={selectedProducts.length === products.length && products.length > 0}
-                        onChange={handleSelectAll}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                      />
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Product
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Category
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Price
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Stock
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Variants
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {products.map((product) => {
-                    const totalStock = getTotalStock(product.variants);
-                    const stockStatus = getStockStatus(totalStock);
-                    const StockIcon = stockStatus.icon;
+      <ProductTable
+        products={products}
+        loading={loading}
+        totalPages={totalPages}
+        currentPage={page}
+        onPageChange={setPage}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onDuplicate={handleDuplicate}
+        selectedProducts={selectedProducts}
+        onSelectAll={handleSelectAll}
+        onSelectProduct={handleSelectProduct}
+      />
 
-                    return (
-                      <tr
-                        key={product.id}
-                        className={`hover:bg-gray-50 transition-colors ${
-                          selectedProducts.includes(product.id) ? 'bg-blue-50' : ''
-                        }`}
-                      >
-                        <td className="px-4 py-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedProducts.includes(product.id)}
-                            onChange={() => handleSelectProduct(product.id)}
-                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                          />
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                              {product.images && product.images.length > 0 ? (
-                                <img 
-                                  src={product.images[0].url} 
-                                  alt={product.name}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
-                              ) : (
-                                <Package size={24} className="text-gray-400" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">{product.name}</p>
-                              <p className="text-sm text-gray-500">
-                                SKU: {product.variants && product.variants[0]?.sku || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                            {product.category?.name || 'N/A'}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="font-medium text-gray-900">
-                            {formatPrice(product.basePrice)}
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <StockIcon size={16} className={`text-${stockStatus.color}-600`} />
-                            <span className={`font-medium text-${stockStatus.color}-600`}>
-                              {totalStock}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <span className="text-sm text-gray-600">
-                            {product.variants?.length || 0} variant(s)
-                          </span>
-                        </td>
-
-                        <td className="px-4 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="View"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button 
-                              className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button 
-                              onClick={() => handleDuplicate(product)}
-                              className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                              title="Duplicate"
-                            >
-                              <Copy size={18} />
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(product)}
-                              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="px-4 py-4 border-t flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                Showing page <span className="font-medium">{page}</span> of{' '}
-                <span className="font-medium">{totalPages || 1}</span>
-              </p>
-              <div className="flex gap-2">
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  disabled={page === 1}
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                >
-                  Previous
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  disabled={page >= totalPages}
-                  onClick={() => setPage(p => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Edit/Create Form Modal */}
+      {showForm && (
+        <ProductForm
+          product={editingProduct}
+          onSave={handleSaveProduct}
+          onClose={() => {
+            setShowForm(false);
+            setEditingProduct(null);
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
-      {/* <Modal
+      <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Confirm Delete"
+        title="Xác Nhận Xóa Sản Phẩm"
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            Are you sure you want to delete <span className="font-semibold">{productToDelete?.name}</span>?
-            This action cannot be undone.
+            Bạn có chắc muốn xóa sản phẩm "<span className="font-semibold">{productToDelete?.name}</span>"?
+            Hành động này không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setDeleteModalOpen(false)}>
-              Cancel
+              Hủy
             </Button>
             <Button variant="danger" onClick={confirmDelete}>
-              Delete
+              Xóa
             </Button>
           </div>
         </div>
-      </Modal> */}
+      </Modal>
     </div>
   );
 };

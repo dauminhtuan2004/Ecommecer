@@ -1,11 +1,11 @@
 // src/services/productService.js
-import axiosInstance from '../config/api.config';
+import axiosInstance from "../config/api.config";
 
 const productService = {
   // Get all products với pagination và filters
   getAll: async (params = {}) => {
-    const { page = 1, limit = 10, search = '', categoryId = '' } = params;
-    return await axiosInstance.get('/products', {
+    const { page = 1, limit = 10, search = "", categoryId = "" } = params;
+    return await axiosInstance.get("/products", {
       params: {
         page,
         limit,
@@ -22,7 +22,7 @@ const productService = {
 
   // Create new product
   create: async (productData) => {
-    return await axiosInstance.post('/products', productData);
+    return await axiosInstance.post("/products", productData);
   },
 
   // Update product
@@ -38,31 +38,41 @@ const productService = {
   },
 
   // Bulk delete products
-  bulkDelete: async (productIds) => {
-    return await axiosInstance.post('/products/bulk-delete', {
-      productIds,
-      confirm: true,
-    });
-  },
+ bulkDelete: async (productIds) => {
+  const response = await axiosInstance.post('/products/bulk-delete', {
+    productIds,
+    confirm: true,
+  });
+  return response.data;
+},
 
   // Add variant to product
   addVariant: async (productId, variantData) => {
-    return await axiosInstance.post(`/products/${productId}/variant`, variantData);
+    return await axiosInstance.post(
+      `/products/${productId}/variant`,
+      variantData
+    );
   },
 
   // Add image to product
-  addImage: async (productId, imageData) => {
-    return await axiosInstance.post(`/products/${productId}/image`, imageData);
+  addImage: async (productId, formData) => {
+    const response = await axiosInstance.post(
+      `/products/${productId}/image`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response.data;
   },
-
   // Get categories (for filter)
   getCategories: async () => {
-    return await axiosInstance.get('/categories');
+    return await axiosInstance.get("/categories");
   },
 
   // Get brands (for filter)
   getBrands: async () => {
-    return await axiosInstance.get('/brands');
+    return await axiosInstance.get("/brands");
   },
 };
 

@@ -1,28 +1,30 @@
 // src/components/admin/ProductManagement/ProductForm.jsx (cập nhật)
-import React, { useState, useEffect } from 'react';
-import Button from '../../common/Button';  // Fix import: default
-import Input from '../../common/Input';  // Fix import: default
-import productService from '../../../services/productService';  // Default import
+import React, { useState, useEffect } from "react";
+import Button from "../../common/Button"; // Fix import: default
+import Input from "../../common/Input"; // Fix import: default
+import productService from "../../../services/productService"; // Default import
 
 const ProductForm = ({ product, onSave, onClose }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    basePrice: '',  // Match backend 'basePrice'
-    stock: '',
-    description: '',
-    categoryId: '',
-    brandId: '',
+    name: "",
+    basePrice: "", // Match backend 'basePrice'
+    stock: "",
+    description: "",
+    categoryId: "",
+    brandId: "",
     variants: [],
     images: [],
   });
-  const [variants, setVariants] = useState([{ size: '', color: '', price: '', stock: '', sku: '' }]);  // Thêm stock, sku từ JSON
-  const [images, setImages] = useState([]);  // { url, alt }
+  const [variants, setVariants] = useState([
+    { size: "", color: "", price: "", stock: "", sku: "" },
+  ]); // Thêm stock, sku từ JSON
+  const [images, setImages] = useState([]); // { url, alt }
 
   useEffect(() => {
     if (product) {
       setFormData({
         name: product.name,
-        basePrice: product.basePrice,  // Match field
+        basePrice: product.basePrice, // Match field
         stock: product.stock,
         description: product.description,
         categoryId: product.categoryId,
@@ -30,7 +32,11 @@ const ProductForm = ({ product, onSave, onClose }) => {
         variants: product.variants || [],
         images: product.images || [],
       });
-      setVariants(product.variants || [{ size: '', color: '', price: '', stock: '', sku: '' }]);
+      setVariants(
+        product.variants || [
+          { size: "", color: "", price: "", stock: "", sku: "" },
+        ]
+      );
       setImages(product.images || []);
     }
   }, [product]);
@@ -41,12 +47,15 @@ const ProductForm = ({ product, onSave, onClose }) => {
       const data = { ...formData, variants };
       await onSave(data);
     } catch (error) {
-      console.error('Save error:', error);
+      console.error("Save error:", error);
     }
   };
 
   const addVariant = () => {
-    setVariants([...variants, { size: '', color: '', price: '', stock: '', sku: '' }]);
+    setVariants([
+      ...variants,
+      { size: "", color: "", price: "", stock: "", sku: "" },
+    ]);
   };
 
   const handleVariantChange = (index, field, value) => {
@@ -60,19 +69,34 @@ const ProductForm = ({ product, onSave, onClose }) => {
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file && product?.id) {  // Nếu edit, upload thật qua API
-      const formDataImage = new FormData();
-      formDataImage.append('image', file);
-      try {
-        const newImage = await productService.addImage(product.id, { url: file.name, alt: file.name });  // Gọi API
-        setImages([...images, newImage]);
-      } catch (error) {
-        console.error('Upload image error:', error);
+    const files = Array.from(e.target.files); // Multiple files
+    if (files.length === 0) return;
+
+    if (product?.id) {
+      // Edit mode, upload thật
+      const uploadedImages = [];
+      for (const file of files) {
+        const formDataImage = new FormData();
+        formDataImage.append("image", file); // Backend expect 'image' field
+        try {
+          const newImage = await productService.addImage(
+            product.id,
+            formDataImage
+          ); // Gọi POST /products/:id/image với FormData
+          uploadedImages.push(newImage);
+        } catch (error) {
+          console.error("Upload image error:", error);
+          toast.error("Upload hình ảnh thất bại");
+        }
       }
+      setImages([...images, ...uploadedImages]);
     } else {
-      // Preview tạm
-      setImages([...images, { url: URL.createObjectURL(file), alt: file.name }]);
+      // Preview tạm (create mode)
+      const previewImages = files.map((file) => ({
+        url: URL.createObjectURL(file),
+        alt: file.name,
+      }));
+      setImages([...images, ...previewImages]);
     }
   };
 
@@ -81,9 +105,11 @@ const ProductForm = ({ product, onSave, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">{product ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm'}</h2>
+        <h2 className="text-xl font-bold mb-4">
+          {product ? "Sửa Sản Phẩm" : "Thêm Sản Phẩm"}
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             type="text"
@@ -98,7 +124,9 @@ const ProductForm = ({ product, onSave, onClose }) => {
             name="basePrice"
             label="Giá Cơ Bản (VND)"
             value={formData.basePrice}
-            onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, basePrice: e.target.value })
+            }
             required
           />
           <Input
@@ -106,7 +134,9 @@ const ProductForm = ({ product, onSave, onClose }) => {
             name="stock"
             label="Hàng Tồn"
             value={formData.stock}
-            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, stock: e.target.value })
+            }
             required
           />
           <Input
@@ -114,7 +144,9 @@ const ProductForm = ({ product, onSave, onClose }) => {
             name="categoryId"
             label="Category ID"
             value={formData.categoryId}
-            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, categoryId: e.target.value })
+            }
             required
           />
           <Input
@@ -122,53 +154,74 @@ const ProductForm = ({ product, onSave, onClose }) => {
             name="brandId"
             label="Brand ID"
             value={formData.brandId}
-            onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, brandId: e.target.value })
+            }
           />
           <Input
             type="textarea"
             name="description"
             label="Mô Tả"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
             rows={3}
           />
 
           {/* Variants */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Variants</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Variants
+            </label>
             {variants.map((variant, index) => (
               <div key={index} className="border p-3 rounded mb-2 space-y-2">
                 <Input
                   type="text"
                   placeholder="Size"
                   value={variant.size}
-                  onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                  onChange={(e) =>
+                    handleVariantChange(index, "size", e.target.value)
+                  }
                 />
                 <Input
                   type="text"
                   placeholder="Color"
                   value={variant.color}
-                  onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                  onChange={(e) =>
+                    handleVariantChange(index, "color", e.target.value)
+                  }
                 />
                 <Input
                   type="number"
                   placeholder="Price Override"
                   value={variant.price}
-                  onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                  onChange={(e) =>
+                    handleVariantChange(index, "price", e.target.value)
+                  }
                 />
                 <Input
                   type="number"
                   placeholder="Stock Variant"
                   value={variant.stock}
-                  onChange={(e) => handleVariantChange(index, 'stock', e.target.value)}
+                  onChange={(e) =>
+                    handleVariantChange(index, "stock", e.target.value)
+                  }
                 />
                 <Input
                   type="text"
                   placeholder="SKU"
                   value={variant.sku}
-                  onChange={(e) => handleVariantChange(index, 'sku', e.target.value)}
+                  onChange={(e) =>
+                    handleVariantChange(index, "sku", e.target.value)
+                  }
                 />
-                <Button type="button" variant="danger" size="sm" onClick={() => removeVariant(index)}>
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={() => removeVariant(index)}
+                >
                   Xóa Variant
                 </Button>
               </div>
@@ -180,16 +233,28 @@ const ProductForm = ({ product, onSave, onClose }) => {
 
           {/* Images */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Hình Ảnh</label>
-            <Input type="file" name="image" onChange={handleImageUpload} accept="image/*" multiple />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hình Ảnh
+            </label>
+            <Input
+              type="file"
+              name="image"
+              onChange={handleImageUpload}
+              accept="image/*"
+              multiple
+            />
             <div className="mt-2 grid grid-cols-3 gap-2">
               {images.map((img, index) => (
                 <div key={index} className="relative">
-                  <img src={img.url} alt={img.alt} className="w-20 h-20 object-cover rounded" />
-                  <Button 
-                    type="button" 
-                    variant="danger" 
-                    size="sm" 
+                  <img
+                    src={img.url}
+                    alt={img.alt}
+                    className="w-20 h-20 object-cover rounded"
+                  />
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
                     className="absolute top-0 right-0 w-5 h-5 rounded-full"
                     onClick={() => removeImage(index)}
                   >
