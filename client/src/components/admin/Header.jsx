@@ -57,11 +57,11 @@ const AdminHeader = ({ sidebarOpen, setSidebarOpen }) => {
           </button>
 
           {/* Logo */}
-          <Link to="/admin" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-lg">E</span>
+          <Link to="/admin-dashboard" className="flex items-center gap-2">
+            <div className="w-15 h-15 rounded-lg flex items-center justify-center pb-2">
+                <img src="./public/logoMT.png" alt="Logo" />
             </div>
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">
+            <span className="text-xl font-bold text-blue-600 hidden sm:block">
               Admin Panel
             </span>
           </Link>

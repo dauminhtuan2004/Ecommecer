@@ -2,8 +2,8 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
-import ProtectedRoute from './ProtectedRoute';
-import AdminRoute from './AdminRoute';
+// import ProtectedRoute from './ProtectedRoute';
+// import AdminRoute from './AdminRoute';
 
 // Layouts
 import AdminLayout from '../components/layouts/AdminLayout';
@@ -15,7 +15,7 @@ import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
 
 // Public Pages
-import HomePage from '../pages/Home/HomePage';
+import HomePage from '../pages/Customer/Home/HomePage';
 
 // Admin Pages
 import AdminDashboardPage from '../pages/Admin/Dashboard/AdminDashboardPage';
@@ -26,7 +26,7 @@ const AppRoutes = () => {
     <AuthProvider>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
+        {/* <Route path="/" element={<HomePage />} /> */}
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -38,34 +38,42 @@ const AppRoutes = () => {
         <Route 
           path="/account" 
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <div className="container mx-auto px-4 py-8">
                 <h1 className="text-3xl font-bold">Account Page (Customer)</h1>
               </div>
-            </ProtectedRoute>
+            // {/* </ProtectedRoute> */}
           } 
         />
+        <Route 
+          path="/home" 
+          element={ 
+            // <ProtectedRoute>
+              <HomePage />
+            // </ProtectedRoute>
+          } 
+        />  
 
         {/* Admin Routes - WITH AdminLayout */}
         <Route 
           path="/admin-dashboard" 
           element={
-            <AdminRoute>
+            // <AdminRoute>
               <AdminLayout>
                 <AdminDashboardPage />
               </AdminLayout>
-            </AdminRoute>
+            // </AdminRoute>
           } 
         />
         
         <Route 
           path="/admin-products" 
           element={
-            <AdminRoute>
+            // <AdminRoute>
               <AdminLayout>
                 <AdminProductsPage />
               </AdminLayout>
-            </AdminRoute>
+            // </AdminRoute>
           } 
         />
 

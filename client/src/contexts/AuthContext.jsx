@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     toast.success('Đăng xuất thành công!');
   };
 
-  // ✅ THÊM: handleLogout function
+
   const handleLogout = () => {
     logout();
   };

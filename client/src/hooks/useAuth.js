@@ -10,7 +10,7 @@ export const useAuth = () => {
     const data = await context.login(credentials);
     const role = data?.user?.role;
     if (role === 'ADMIN') navigate('/admin-dashboard');
-    else navigate('/');
+    else navigate('/home'); 
     return data;
   };
 
