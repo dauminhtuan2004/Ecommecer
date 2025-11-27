@@ -19,7 +19,8 @@ import HomePage from '../pages/Customer/Home/HomePage';
 
 // Admin Pages
 import AdminDashboardPage from '../pages/Admin/Dashboard/AdminDashboardPage';
-import AdminProductsPage from '../pages/Admin/Product/AdminProductsPage';
+import AdminProductsPage from '../pages/Admin/Product/ProductsPage';
+import AdminCategoriesPage from '../pages/Admin/Category/CategoriesPage';
 
 const AppRoutes = () => {
   return (
@@ -72,6 +73,17 @@ const AppRoutes = () => {
             // <AdminRoute>
               <AdminLayout>
                 <AdminProductsPage />
+              </AdminLayout>
+            // </AdminRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin-categories" 
+          element={
+            // <AdminRoute>
+              <AdminLayout>
+                <AdminCategoriesPage />
               </AdminLayout>
             // </AdminRoute>
           } 
