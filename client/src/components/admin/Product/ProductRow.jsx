@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Edit, MoreVertical, Copy, Layers, ChevronDown, ChevronUp, Package } from 'lucide-react';
-import ProductActions from './ProductActions';
-import Button from '../../common/Button';
+import { useState } from "react";
+// import { ChevronDown, ChevronUp } from "lucide-react";
+import ProductActions from "./ProductActions";
+import ProductDetails from "./ProductDetail";
+import Button from "../../common/Button";
+import { Edit, MoreVertical, Layers, ChevronDown, ChevronUp, Package } from 'lucide-react';
 
 const ProductRow = ({
   product,
@@ -10,41 +12,50 @@ const ProductRow = ({
   onEdit,
   onDelete,
   onDuplicate,
-  onManageVariants
+  onManageVariants,
 }) => {
   const [showActions, setShowActions] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(price);
   };
 
-  useEffect(() => {
-    if (product.images && product.images.length > 0) {
-    }
-  }, [product]);
-
   const getStockStatus = (stock) => {
     const n = Number(stock) || 0;
-    if (n === 0) return { text: 'Hết hàng', color: 'text-rose-700 bg-rose-50 border-rose-200' };
-    if (n < 10) return { text: 'Sắp hết', color: 'text-amber-700 bg-amber-50 border-amber-200' };
-    return { text: 'Còn hàng', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
+    if (n === 0)
+      return {
+        text: "Hết hàng",
+        color: "text-rose-700 bg-rose-50 border-rose-200",
+      };
+    if (n < 10)
+      return {
+        text: "Sắp hết",
+        color: "text-amber-700 bg-amber-50 border-amber-200",
+      };
+    return {
+      text: "Còn hàng",
+      color: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    };
   };
 
-  const totalStock = (product.variants && product.variants.length > 0)
-    ? product.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
-    : (Number(product.stock) || 0);
+  const totalStock =
+    product.variants && product.variants.length > 0
+      ? product.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+      : Number(product.stock) || 0;
   const stockStatus = getStockStatus(totalStock);
   const hasVariants = product.variants && product.variants.length > 0;
 
   return (
     <>
-      <tr className={`border-b border-gray-100 transition-all duration-200 ${
-        isSelected ? 'bg-blue-50/50' : 'hover:bg-gray-50/50'
-      }`}>
+      <tr
+        className={`border-b border-gray-100 transition-all duration-200 ${
+          isSelected ? "bg-blue-50/50" : "hover:bg-gray-50/50"
+        }`}
+      >
         {/* Checkbox */}
         <td className="px-6 py-4">
           <input
@@ -76,7 +87,7 @@ const ProductRow = ({
                 {product.name}
               </div>
               <div className="text-sm text-gray-500">
-                {product.sku || 'Chưa có SKU'}
+                {product.sku || "Chưa có SKU"}
               </div>
             </div>
           </div>
@@ -85,7 +96,7 @@ const ProductRow = ({
         {/* Category */}
         <td className="px-6 py-4">
           <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 border border-slate-200">
-            {product.category?.name || 'N/A'}
+            {product.category?.name || "N/A"}
           </span>
         </td>
 
@@ -100,7 +111,9 @@ const ProductRow = ({
         <td className="px-6 py-4">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-gray-900">{totalStock}</span>
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${stockStatus.color}`}>
+            <span
+              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${stockStatus.color}`}
+            >
               {stockStatus.text}
             </span>
           </div>
@@ -180,90 +193,8 @@ const ProductRow = ({
         />
       )}
 
-      {/* Expanded Details - Compact Layout */}
-      {expanded && (
-        <tr className="bg-slate-50">
-          <td colSpan="7" className="px-4 py-3">
-            <div className="space-y-3 text-sm">
-              {/* Row 1: Info & Main Images */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Info */}
-                <div className="bg-white p-3 rounded-lg border border-gray-100">
-                  <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Tên / Danh mục</p>
-                  <p className="font-medium text-gray-900">{product.name}</p>
-                  <p className="text-xs text-gray-600 mt-1">{product.category?.name || 'N/A'}</p>
-                  <p className="text-xs text-gray-500 mt-2 leading-tight">{product.description ? product.description.substring(0, 80) + '...' : 'N/A'}</p>
-                </div>
-
-                {/* Main Images */}
-                <div className="bg-white p-3 rounded-lg border border-gray-100">
-                  <p className="text-xs text-gray-600 font-semibold uppercase mb-2">Ảnh chung</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {product.images?.filter(img => !img.variantId).slice(0, 4).map(img => (
-                      <div key={img.id} className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
-                        <img src={img.url} alt={img.altText || ''} className="w-full h-full object-cover" />
-                      </div>
-                    ))}
-                    {(!product.images || product.images.filter(img => !img.variantId).length === 0) && (
-                      <span className="text-xs text-gray-400 italic">Không có</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Variants */}
-              {product.variants && product.variants.length > 0 && (
-                <div className="bg-white p-3 rounded-lg border border-gray-100">
-                  <p className="text-xs text-gray-600 font-semibold uppercase mb-2">Biến thể</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {product.variants.map((variant, idx) => {
-                      const variantImages = product.images?.filter(img => img.variantId === variant.id) || [];
-                      return (
-                        <div key={variant.id} className="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
-                          <div className="flex items-start justify-between mb-2">
-                            <span className="font-semibold text-gray-900">{variant.size || 'N/A'} • {variant.color || 'N/A'}</span>
-                            <span className="text-gray-500">SKU: {variant.sku || '—'}</span>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 mb-2">
-                            <div>
-                              <p className="text-gray-500 text-xs">Giá</p>
-                              <p className="font-bold text-emerald-600">{formatPrice(variant.price)}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 text-xs">Tồn</p>
-                              <p className="font-bold text-blue-600">{variant.stock}</p>
-                            </div>
-                            <div>
-                              <p className="text-gray-500 text-xs">Trạng thái</p>
-                              <p className={`font-bold text-xs ${variant.stock > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                                {variant.stock > 0 ? '✓' : '✗'}
-                              </p>
-                            </div>
-                          </div>
-                          {variantImages.length > 0 && (
-                            <div className="flex gap-1">
-                              {variantImages.slice(0, 3).map(img => (
-                                <div key={img.id} className="w-12 h-12 rounded border border-violet-200 overflow-hidden">
-                                  <img src={img.url} alt={img.altText || ''} className="w-full h-full object-cover" />
-                                </div>
-                              ))}
-                              {variantImages.length > 3 && (
-                                <div className="w-12 h-12 rounded border border-gray-200 bg-gray-100 flex items-center justify-center text-xs text-gray-600 font-bold">
-                                  +{variantImages.length - 3}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </td>
-        </tr>
-      )}
+      {/* Expanded Details */}
+      {expanded && <ProductDetails product={product} />}
     </>
   );
 };

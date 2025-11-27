@@ -13,7 +13,7 @@ import Button from '../../common/Button';
 import DeleteConfirmModal from '../../common/DeleteConfirm';
 import toast from 'react-hot-toast';
 import ImageManagerModal from './ImageManagerModal';
-import ProductDetailModal from './ProductDetailModal';
+// import ProductDetailModal from './ProductDetailModal';
 
 const ProductActions = ({ 
   product, 
