@@ -1,5 +1,6 @@
 import Pagination from "../../common/Pagination";
 import ProductRow from "./ProductRow";
+import { Settings } from "lucide-react";
 
 const ProductTable = ({
   products,
@@ -9,6 +10,7 @@ const ProductTable = ({
   onEdit,
   onDelete,
   onDuplicate,
+  onManageVariants,
   selectedProducts,
   onSelectAll,
   onSelectProduct,
@@ -63,6 +65,7 @@ const ProductTable = ({
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onDuplicate={onDuplicate}
+                onManageVariants={onManageVariants}
               />
             ))}
           </tbody>

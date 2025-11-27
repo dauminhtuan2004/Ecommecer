@@ -1,0 +1,206 @@
+import { useState } from 'react';
+import { 
+  Edit, 
+  Trash2, 
+  Eye, 
+  Copy, 
+  Archive, 
+  Layers,
+  EyeOff,
+  Link
+} from 'lucide-react';
+import Button from '../../common/Button';
+import DeleteConfirmModal from '../../common/DeleteConfirm';
+import toast from 'react-hot-toast';
+import ImageManagerModal from './ImageManagerModal';
+
+const ProductActions = ({ 
+  product, 
+  onClose, 
+  onEdit, 
+  onDelete, 
+  onDuplicate,
+  onManageVariants 
+}) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showImageManager, setShowImageManager] = useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await onDelete(product);
+      toast.success('Đã xóa sản phẩm thành công');
+      onClose();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Không thể xóa sản phẩm');
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    setLoading(true);
+    try {
+      await onDuplicate(product);
+      toast.success('Đã sao chép sản phẩm thành công');
+      onClose();
+    } catch (error) {
+      console.error('Error duplicating product:', error);
+      toast.error('Không thể sao chép sản phẩm');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = () => {
+    // Navigate to product detail page
+    window.open(`/products/${product.id}`, '_blank');
+    onClose();
+  };
+
+  const handleCopyLink = () => {
+    const productUrl = `${window.location.origin}/products/${product.id}`;
+    navigator.clipboard.writeText(productUrl);
+    toast.success('Đã sao chép link sản phẩm');
+    onClose();
+  };
+
+  const actionItems = [
+    {
+      label: 'Xem chi tiết',
+      icon: <Eye size={16} />,
+      onClick: handleViewDetails,
+      color: 'text-gray-700'
+    },
+    {
+      label: 'Sao chép link',
+      icon: <Link size={16} />,
+      onClick: handleCopyLink,
+      color: 'text-blue-600'
+    },
+    {
+      label: 'Chỉnh sửa',
+      icon: <Edit size={16} />,
+      onClick: () => {
+        onEdit(product);
+        onClose();
+      },
+      color: 'text-blue-600'
+    },
+    {
+      label: 'Sao chép sản phẩm',
+      icon: <Copy size={16} />,
+      onClick: handleDuplicate,
+      color: 'text-green-600'
+    },
+    {
+      label: 'Quản lý biến thể',
+      icon: <Layers size={16} />,
+      onClick: () => {
+        onManageVariants(product);
+        onClose();
+      },
+      color: 'text-purple-600'
+    },
+    {
+      label: 'Quản lý ảnh',
+      icon: <Archive size={16} />,
+      onClick: () => {
+        setShowImageManager(true);
+      },
+      color: 'text-indigo-600'
+    },
+    {
+      label: product.active ? 'Ẩn sản phẩm' : 'Hiện sản phẩm',
+      icon: product.active ? <EyeOff size={16} /> : <Eye size={16} />,
+      onClick: () => {
+        console.log('Toggle product status:', product.id);
+        onClose();
+      },
+      color: product.active ? 'text-orange-600' : 'text-green-600'
+    },
+    {
+      label: 'Lưu trữ',
+      icon: <Archive size={16} />,
+      onClick: () => {
+        console.log('Archive product:', product.id);
+        onClose();
+      },
+      color: 'text-gray-600'
+    },
+    {
+      label: 'Xóa sản phẩm',
+      icon: <Trash2 size={16} />,
+      onClick: () => setShowDeleteModal(true),
+      color: 'text-red-600',
+      destructive: true
+    }
+  ];
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 z-40" 
+        onClick={handleBackdropClick}
+      >
+        {/* Menu */}
+        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 min-w-[200px] z-50">
+          {actionItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              disabled={loading}
+              className={`
+                w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors
+                ${item.color}
+                ${item.destructive 
+                  ? 'hover:bg-red-50 focus:bg-red-50' 
+                  : 'hover:bg-gray-50 focus:bg-gray-50'
+                }
+                disabled:opacity-50 disabled:cursor-not-allowed
+              `}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {showImageManager && (
+        <ImageManagerModal
+          product={product}
+          isOpen={showImageManager}
+          onClose={() => setShowImageManager(false)}
+          onUpdated={() => {
+            // parent can refresh if needed
+            onClose();
+          }}
+        />
+      )}
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Xóa sản phẩm"
+        message={`Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa sản phẩm"
+        cancelText="Hủy"
+        variant="danger"
+        loading={loading}
+      />
+    </>
+  );
+};
+
+export default ProductActions;

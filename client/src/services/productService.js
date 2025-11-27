@@ -54,6 +54,16 @@ export const productService = {
     );
   },
 
+  // Update an existing variant
+  updateVariant: async (variantId, variantData) => {
+    return await axiosInstance.put(`/products/variant/${variantId}`, variantData);
+  },
+
+  // Delete a variant by its ID
+  deleteVariant: async (variantId) => {
+    return await axiosInstance.delete(`/products/variant/${variantId}`);
+  },
+
   // ============ UPLOAD ẢNH TỪ MÁY TÍNH ============
   uploadImages: async (productId, files, metadata = {}) => {
     const formData = new FormData();
