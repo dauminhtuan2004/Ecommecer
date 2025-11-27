@@ -6,6 +6,9 @@ const VariantSection = ({
   onVariantChange,
   onAddVariant,
   onRemoveVariant,
+  onUploadVariantImages,
+  onDeleteVariantImage,
+  productImages = [],
   basePrice
 }) => {
   return (
@@ -140,6 +143,40 @@ const VariantSection = ({
                   className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500 transition-all"
                 />
               </div>
+            </div>
+            {/* Upload images for this variant (only for saved variants) */}
+            <div className="mt-3">
+              {variant.id ? (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => onUploadVariantImages && onUploadVariantImages(index, e.target.files)}
+                    />
+                    <span className="text-xs text-gray-500">Tải ảnh cho variant này (nếu có)</span>
+                  </div>
+                  {/* Thumbnails for this variant */}
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {productImages.filter(img => img.variantId === variant.id).map(img => (
+                      <div key={img.id} className="relative w-20 h-20 border rounded overflow-hidden">
+                        <img src={img.url} alt={img.altText || ''} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => onDeleteVariantImage && onDeleteVariantImage(img.id)}
+                          className="absolute top-1 right-1 bg-red-600 text-white rounded p-0.5 text-xs"
+                          title="Xóa ảnh"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">Lưu variant trước để tải ảnh cho variant này</div>
+              )}
             </div>
 
             {/* Preview giá nếu không nhập */}

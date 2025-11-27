@@ -80,6 +80,22 @@ export class ProductController {
     return this.productService.createVariant(createVariantDto);
   }
 
+  @Put('variant/:variantId')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Update variant by ID (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Variant updated' })
+  updateVariant(@Param('variantId') variantId: string, @Body() body: any) {
+    return this.productService.updateVariant(+variantId, body);
+  }
+
+  @Delete('variant/:variantId')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete variant by ID (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Variant deleted' })
+  removeVariant(@Param('variantId') variantId: string) {
+    return this.productService.deleteVariant(+variantId);
+  }
+
   // ============ ẢNH TỪ MÁY TÍNH ============
   @Post(':id/images')
   @Roles('ADMIN')
@@ -134,17 +150,20 @@ export class ProductController {
     @Param('id') id: string,
     @UploadedFiles() files: Express.Multer.File[],
     @Body('altText') altText?: string,
-    @Body('isThumbnail') isThumbnail?: string  // Form-data gửi string, cần parse
+    @Body('isThumbnail') isThumbnail?: string,  // Form-data gửi string, cần parse
+    @Body('variantId') variantId?: string
   ) {
     if (!files || files.length === 0) {
       throw new BadRequestException('Vui lòng chọn ít nhất 1 file ảnh');
     }
 
     const isThumbnailBool = isThumbnail === 'true';
-    
+    const variantIdNum = variantId ? parseInt(variantId, 10) : undefined;
+
     return this.productService.uploadProductImages(+id, files, {
       altText,
-      isThumbnail: isThumbnailBool
+      isThumbnail: isThumbnailBool,
+      variantId: variantIdNum,
     });
   }
 

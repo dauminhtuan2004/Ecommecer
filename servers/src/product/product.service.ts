@@ -106,11 +106,38 @@ export class ProductService {
     return variant;
   }
 
+  async updateVariant(variantId: number, data: any): Promise<any> {
+    const existing = await this.prisma.productVariant.findUnique({ where: { id: variantId } });
+    if (!existing) throw new NotFoundException(`Variant #${variantId} không tồn tại`);
+
+    const updated = await this.prisma.productVariant.update({ where: { id: variantId }, data });
+    await this.cacheManager.del(`product:${updated.productId}`);
+    await this.cacheManager.del('products:all');
+    return updated;
+  }
+
+  async deleteVariant(variantId: number): Promise<any> {
+    const existing = await this.prisma.productVariant.findUnique({ where: { id: variantId } });
+    if (!existing) throw new NotFoundException(`Variant #${variantId} không tồn tại`);
+
+    // remove any images associated with this variant
+    const images = await this.prisma.productImage.findMany({ where: { variantId } });
+    for (const img of images) {
+      await this.deleteImageFromCloudinary(img.url);
+      await this.prisma.productImage.delete({ where: { id: img.id } });
+    }
+
+    const deleted = await this.prisma.productVariant.delete({ where: { id: variantId } });
+    await this.cacheManager.del(`product:${deleted.productId}`);
+    await this.cacheManager.del('products:all');
+    return deleted;
+  }
+
   // ============ UPLOAD ẢNH TỪ MÁY TÍNH ============
   async uploadProductImages(
     productId: number,
     files: Express.Multer.File[],
-    metadata: { altText?: string; isThumbnail?: boolean }
+    metadata: { altText?: string; isThumbnail?: boolean; variantId?: number }
   ): Promise<any> {
     // 1. Kiểm tra product tồn tại
     const product = await this.prisma.product.findUnique({
@@ -127,10 +154,19 @@ export class ProductService {
 
     // 3. Nếu set thumbnail, bỏ thumbnail cũ
     if (metadata.isThumbnail) {
-      await this.prisma.productImage.updateMany({
-        where: { productId },
-        data: { isThumbnail: false }
-      });
+      if (metadata.variantId) {
+        // unset thumbnail only for this variant's images
+        await this.prisma.productImage.updateMany({
+          where: { productId, variantId: metadata.variantId },
+          data: { isThumbnail: false }
+        });
+      } else {
+        // unset thumbnail for product-level images
+        await this.prisma.productImage.updateMany({
+          where: { productId, variantId: null },
+          data: { isThumbnail: false }
+        });
+      }
     }
 
     // 4. Lưu vào DB (transaction để đảm bảo tất cả thành công)
@@ -139,6 +175,7 @@ export class ProductService {
         this.prisma.productImage.create({
           data: {
             productId,
+            variantId: metadata.variantId || null,
             url,
             altText: metadata.altText || `${product.name} - Ảnh ${index + 1}`,
             isThumbnail: metadata.isThumbnail && index === 0, // Chỉ ảnh đầu làm thumbnail

@@ -423,6 +423,7 @@ const AdminProductsPage = () => {
             setManagingVariantsProduct(null);
           }}
           onSave={handleSaveVariants}
+          onImagesUploaded={loadProducts}
         />
       )}
 

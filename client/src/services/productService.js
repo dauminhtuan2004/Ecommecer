@@ -78,6 +78,9 @@ export const productService = {
     if (metadata.isThumbnail !== undefined) {
       formData.append('isThumbnail', metadata.isThumbnail.toString());
     }
+    if (metadata.variantId !== undefined && metadata.variantId !== null) {
+      formData.append('variantId', String(metadata.variantId));
+    }
 
     const response = await axiosInstance.post(
       `/products/${productId}/images`,

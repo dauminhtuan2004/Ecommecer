@@ -13,6 +13,7 @@ import Button from '../../common/Button';
 import DeleteConfirmModal from '../../common/DeleteConfirm';
 import toast from 'react-hot-toast';
 import ImageManagerModal from './ImageManagerModal';
+import ProductDetailModal from './ProductDetailModal';
 
 const ProductActions = ({ 
   product, 
@@ -25,6 +26,7 @@ const ProductActions = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showImageManager, setShowImageManager] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const handleDelete = async () => {
     setLoading(true);
@@ -56,9 +58,8 @@ const ProductActions = ({
   };
 
   const handleViewDetails = () => {
-    // Navigate to product detail page
-    window.open(`/products/${product.id}`, '_blank');
-    onClose();
+    // Open admin detail modal
+    setShowDetailModal(true);
   };
 
   const handleCopyLink = () => {
@@ -183,6 +184,16 @@ const ProductActions = ({
           onClose={() => setShowImageManager(false)}
           onUpdated={() => {
             // parent can refresh if needed
+            onClose();
+          }}
+        />
+      )}
+      {showDetailModal && (
+        <ProductDetailModal
+          productId={product.id}
+          isOpen={showDetailModal}
+          onClose={() => {
+            setShowDetailModal(false);
             onClose();
           }}
         />
