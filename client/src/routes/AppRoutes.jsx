@@ -46,7 +46,7 @@ const AppRoutes = () => {
           } 
         />
         <Route 
-          path="/home" 
+          path="/" 
           element={ 
             // <ProtectedRoute>
               <HomePage />

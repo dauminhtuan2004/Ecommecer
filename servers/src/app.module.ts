@@ -10,6 +10,7 @@ import { OrderModule } from './order/order.module';
 import { UploadModule } from './upload/upload.module'; 
 import { CacheModule } from './cache/cache.module';  
 import { CategoryModule } from './category/category.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { CategoryModule } from './category/category.module';
     OrderModule,
     UploadModule,
     CacheModule,
-    CategoryModule
+    CategoryModule,
+    PaymentModule
   ],
   providers: [PrismaService],
   exports: [PrismaService],

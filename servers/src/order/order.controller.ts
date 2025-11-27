@@ -1,5 +1,28 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  Query,
+  UsePipes,
+  ValidationPipe,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiBody,
+  ApiParam,
+
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -14,7 +37,7 @@ import { DeleteOrderDto } from './dto/delete-order.dto';
 @ApiBearerAuth('Authorization')
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))  
+@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class OrderController {
   constructor(private orderService: OrderService) {}
 
@@ -32,11 +55,23 @@ export class OrderController {
   @ApiOperation({ summary: 'Get user orders' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
+  })
   @ApiResponse({ status: 200, description: 'List of orders' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@Request() req, @Query() query: QueryOrderDto) {
-    return this.orderService.findAll(req.user.userId, query);
+  async findAll(@Query() query: QueryOrderDto, @Req() req: any) {
+    // ✅ Thêm @Req() để lấy req.user
+    // Merge userId từ JWT (user chỉ xem của mình, admin xem all)
+    const userIdFromToken = req.user.userId; // Từ JWT payload
+    const mergedQuery = {
+      ...query,
+      userId: req.user.role === 'ADMIN' ? query.userId : userIdFromToken,
+    }; // ✅ Fix: Merge 1 arg
+
+    return this.orderService.findAll(mergedQuery); // Truyền 1 arg duy nhất
   }
 
   @Get(':id')

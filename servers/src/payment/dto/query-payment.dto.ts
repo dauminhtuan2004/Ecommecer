@@ -1,10 +1,10 @@
-// src/order/dto/query-order.dto.ts (thêm userId)
+// src/payment/dto/query-payment.dto.ts
 import { IsOptional, IsEnum, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { OrderStatus } from '@prisma/client';
+import { PaymentMethod, PaymentStatus } from '@prisma/client';
 
-export class QueryOrderDto {
+export class QueryPaymentDto {
   @ApiProperty({ example: 1, required: false })
   @IsOptional()
   @Type(() => Number)
@@ -19,14 +19,13 @@ export class QueryOrderDto {
   @Min(1)
   limit?: number = 10;
 
-  @ApiProperty({ example: 'PENDING', enum: OrderStatus, required: false })
+  @ApiProperty({ example: 'SUCCESS', enum: PaymentStatus, required: false })
   @IsOptional()
-  @IsEnum(OrderStatus)
-  status?: OrderStatus;
+  @IsEnum(PaymentStatus)
+  status?: PaymentStatus;
 
-  @ApiProperty({ example: 3, required: false, description: 'Filter by user ID (admin only)' })
+  @ApiProperty({ example: 'VNPAY', enum: PaymentMethod, required: false })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  userId?: number;  // ✅ Fix: Thêm field userId optional
+  @IsEnum(PaymentMethod)
+  method?: PaymentMethod;
 }

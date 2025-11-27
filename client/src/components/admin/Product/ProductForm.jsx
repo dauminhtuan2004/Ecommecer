@@ -7,7 +7,6 @@ import BasicInfoSection from "./BasicInfoSection";
 import VariantSection from "./VariantSection";
 import ImageUploadSection from "./ImageUploadSection";
 
-// THÊM categories và brands VÀO PROPS
 const ProductForm = ({
   product,
   categories = [],
@@ -175,7 +174,7 @@ const ProductForm = ({
       setImages((prev) => prev.filter((_, i) => i !== index));
       toast.success("Xóa ảnh thành công");
     } catch (error) {
-      console.error("Delete image error:", error);
+      // console.error("Delete image error:", error);
       toast.error("Xóa ảnh thất bại");
     }
   };
@@ -196,7 +195,6 @@ const ProductForm = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* TRUYỀN categories và brands XUỐNG BasicInfoSection */}
           <BasicInfoSection
             formData={formData}
             categories={categories}

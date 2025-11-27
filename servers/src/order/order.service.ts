@@ -1,6 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  Inject,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';  
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -13,25 +18,32 @@ export class OrderService {
   constructor(
     private prisma: PrismaService,
     private cartService: CartService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,  
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(userId: number, dto: CreateOrderDto): Promise<any> {
     const cart = await this.cartService.getCart(userId);
-    if (cart.cartItems.length === 0) throw new BadRequestException('Cart empty');
+    if (cart.cartItems.length === 0)
+      throw new BadRequestException('Cart empty');
 
     let discount: any = null;
     if (dto.discountCode) {
-      discount = await this.prisma.discount.findUnique({ where: { code: dto.discountCode } });
-      if (!discount || discount.endDate < new Date()) throw new BadRequestException('Invalid discount');
+      discount = await this.prisma.discount.findUnique({
+        where: { code: dto.discountCode },
+      });
+      if (!discount || discount.endDate < new Date())
+        throw new BadRequestException('Invalid discount');
     }
 
-    const totalItems = cart.cartItems.reduce((sum, item) => sum + (item.quantity * item.variant.price), 0);
+    const totalItems = cart.cartItems.reduce(
+      (sum, item) => sum + item.quantity * item.variant.price,
+      0,
+    );
     const taxAmount = totalItems * 0.1;
     const total = totalItems + taxAmount;
     let discountedTotal = total;
     if (discount) {
-      if (discount.percentage) discountedTotal *= (1 - discount.percentage / 100);
+      if (discount.percentage) discountedTotal *= 1 - discount.percentage / 100;
       else if (discount.fixedAmount) discountedTotal -= discount.fixedAmount;
     }
 
@@ -39,13 +51,13 @@ export class OrderService {
       data: {
         userId,
         addressId: dto.addressId,
-        shippingMethodId: dto.shippingMethodId,
+        shippingMethodId: dto.shippingMethodId || null,
         total: discountedTotal,
         taxAmount,
-        discountId: discount?.id,
+        discountId: discount ? discount.id : null,
         status: 'PENDING',
         orderItems: {
-          create: cart.cartItems.map(item => ({
+          create: cart.cartItems.map((item) => ({
             variantId: item.variantId,
             quantity: item.quantity,
             price: item.variant.price,
@@ -62,29 +74,43 @@ export class OrderService {
     return order;
   }
 
-  async findAll(userId: number, query: QueryOrderDto): Promise<any> {
-    const cacheKey = `orders:${userId}:${JSON.stringify(query)}`;
-    
-    let orders = await this.cacheManager.get(cacheKey);
-    if (orders) {
-      console.log(`Cache hit for orders key: ${cacheKey}`);
-      return orders;
-    }
-
-    console.log(`Cache miss for orders key: ${cacheKey} - querying DB`);
-
-    const { page = 1, limit = 10, status } = query;
+  // src/order/order.service.ts (sửa where clause với userId)
+  async findAll(query: QueryOrderDto) {
+    const { page = 1, limit = 10, status, userId } = query; // ✅ Fix: userId từ query (không error TS2339)
     const skip = (page - 1) * limit;
-    orders = await this.prisma.order.findMany({
-      where: { userId, status },
-      skip,
-      take: limit,
-      include: { orderItems: { include: { variant: true } }, payment: true, address: true },
-      orderBy: { createdAt: 'desc' },
-    });
 
-    await this.cacheManager.set(cacheKey, orders, 1800);
-    console.log(`Cache set for orders key: ${cacheKey}`);
+    const where = {};
+    if (status) where['status'] = status;
+    if (userId) where['userId'] = userId; // ✅ Optional filter
+
+    const [ordersData, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          orderItems: {
+            include: { variant: { include: { product: true } } },
+          },
+          payment: true,
+          address: true,
+          user: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    const orders = {
+      orders: ordersData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+
+    const cacheKey = `orders:${JSON.stringify(query)}`;
+    await this.cacheManager.set(cacheKey, orders, 3600);
 
     return orders;
   }
@@ -101,11 +127,16 @@ export class OrderService {
 
     order = await this.prisma.order.findUnique({
       where: { id },
-      include: { orderItems: { include: { variant: true } }, payment: true, address: true, discount: true },
+      include: {
+        orderItems: { include: { variant: true } },
+        payment: true,
+        address: true,
+        discount: true,
+      },
     });
 
     if (order) {
-      await this.cacheManager.set(cacheKey, order, 1800);  
+      await this.cacheManager.set(cacheKey, order, 1800);
       console.log(`Single cache set for order ${id}`);
     }
 
@@ -133,11 +164,17 @@ export class OrderService {
   }
 
   async applyDiscount(orderId: number, dto: ApplyDiscountDto): Promise<any> {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new NotFoundException('Order not found');
-    const discount = await this.prisma.discount.findUnique({ where: { code: dto.code } });
+    const discount = await this.prisma.discount.findUnique({
+      where: { code: dto.code },
+    });
     if (!discount) throw new BadRequestException('Invalid discount');
-    const newTotal = order.total * (1 - (discount.percentage || 0) / 100) - (discount.fixedAmount || 0);
+    const newTotal =
+      order.total * (1 - (discount.percentage || 0) / 100) -
+      (discount.fixedAmount || 0);
     const updatedOrder = await this.prisma.order.update({
       where: { id: orderId },
       data: { total: newTotal, discountId: discount.id },
