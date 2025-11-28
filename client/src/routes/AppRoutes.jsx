@@ -1,26 +1,28 @@
 // src/routes/AppRoutes.jsx
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '../contexts/AuthContext';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "../contexts/authContext";
 // import ProtectedRoute from './ProtectedRoute';
 // import AdminRoute from './AdminRoute';
 
 // Layouts
-import AdminLayout from '../components/layouts/AdminLayout';
+import AdminLayout from "../components/layouts/AdminLayout";
 
 // Auth Pages
-import LoginPage from '../pages/Auth/LoginPage';
-import RegisterPage from '../pages/Auth/RegisterPage';
-import ForgotPasswordPage from '../pages/Auth/ForgotPasswordPage';
-import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
+import LoginPage from "../pages/Auth/LoginPage";
+import RegisterPage from "../pages/Auth/RegisterPage";
+import ForgotPasswordPage from "../pages/Auth/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/Auth/ResetPasswordPage";
 
 // Public Pages
-import HomePage from '../pages/Customer/Home/HomePage';
+import HomePage from "../pages/Customer/Home/HomePage";
 
 // Admin Pages
-import AdminDashboardPage from '../pages/Admin/Dashboard/AdminDashboardPage';
-import AdminProductsPage from '../pages/Admin/Product/ProductsPage';
-import AdminCategoriesPage from '../pages/Admin/Category/CategoriesPage';
+import AdminDashboardPage from "../pages/Admin/Dashboard/AdminDashboardPage";
+import AdminProductsPage from "../pages/Admin/Product/ProductsPage";
+import AdminCategoriesPage from "../pages/Admin/Category/CategoriesPage";
+import AdminUsersPage from "../pages/Admin/User/UserManagement";
+// import AdminOrdersPage from '../pages/Admin/Order/OrdersPage';
 
 const AppRoutes = () => {
   return (
@@ -36,57 +38,73 @@ const AppRoutes = () => {
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         {/* Protected Customer Routes */}
-        <Route 
-          path="/account" 
+        <Route
+          path="/account"
           element={
             // <ProtectedRoute>
-              <div className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold">Account Page (Customer)</h1>
-              </div>
+            <div className="container mx-auto px-4 py-8">
+              <h1 className="text-3xl font-bold">Account Page (Customer)</h1>
+            </div>
             // {/* </ProtectedRoute> */}
-          } 
+          }
         />
-        <Route 
-          path="/" 
-          element={ 
+        <Route
+          path="/"
+          element={
             // <ProtectedRoute>
-              <HomePage />
+            <HomePage />
             // </ProtectedRoute>
-          } 
-        />  
+          }
+        />
 
         {/* Admin Routes - WITH AdminLayout */}
-        <Route 
-          path="/admin-dashboard" 
+        <Route
+          path="/admin-dashboard"
           element={
             // <AdminRoute>
-              <AdminLayout>
-                <AdminDashboardPage />
-              </AdminLayout>
+            <AdminLayout>
+              <AdminDashboardPage />
+            </AdminLayout>
             // </AdminRoute>
-          } 
-        />
-        
-        <Route 
-          path="/admin-products" 
-          element={
-            // <AdminRoute>
-              <AdminLayout>
-                <AdminProductsPage />
-              </AdminLayout>
-            // </AdminRoute>
-          } 
+          }
         />
 
-        <Route 
-          path="/admin-categories" 
+        <Route
+          path="/admin-products"
           element={
             // <AdminRoute>
-              <AdminLayout>
-                <AdminCategoriesPage />
-              </AdminLayout>
+            <AdminLayout>
+              <AdminProductsPage />
+            </AdminLayout>
             // </AdminRoute>
-          } 
+          }
+        />
+
+        <Route
+          path="/admin-categories"
+          element={
+            // <AdminRoute>
+            <AdminLayout>
+              <AdminCategoriesPage />
+            </AdminLayout>
+            // </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin-users"
+          element={
+            // <AdminRoute>
+
+            <AdminLayout>
+              <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold">
+                  User Management Page (Admin)
+                </h1>
+              </div>
+              <AdminUsersPage />
+            </AdminLayout>
+            // </AdminRoute>
+          }
         />
 
         {/* 404 */}

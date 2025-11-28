@@ -13,6 +13,7 @@ import {
   TrendingUp,
   FileText,
   Truck,
+  CreditCard,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -81,6 +82,12 @@ const AdminSidebar = ({ isOpen }) => {
           label: 'Shipping',
           badge: null,
         },
+        {
+          path : '/admin-payments',
+          icon: CreditCard,
+          label: 'Payments',
+          badge: null,
+        }
       ],
     },
     {

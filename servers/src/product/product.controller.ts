@@ -18,7 +18,7 @@ import { multerConfig } from '../upload/multer.config';
 @ApiTags('Products')
 @ApiBearerAuth('Authorization')
 @Controller('products')
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductController {
   constructor(private productService: ProductService) {}
 

@@ -17,4 +17,4 @@ export class UpdateUserResetDto {
   @IsString()
   @MinLength(6)
   password?: string;
-}
+}  

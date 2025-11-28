@@ -1,4 +1,4 @@
-import { useAuth as useAuthContext } from '../contexts/AuthContext';
+import { useAuth as useAuthContext } from '../contexts/authContext';
 import { useNavigate } from 'react-router-dom';
 
 // Wrapper hook: exposes context and provides aliases expected by components
