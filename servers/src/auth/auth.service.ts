@@ -1,5 +1,9 @@
 // src/auth/auth.service.ts
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -23,103 +27,139 @@ export class AuthService {
     if (existingUser) throw new UnauthorizedException('Email already exists');
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.userService.create({ 
-      email, 
-      password: hashedPassword, 
-      name, 
-      role: 'CUSTOMER' 
+    const user = await this.userService.create({
+      email,
+      password: hashedPassword,
+      name,
+      role: 'CUSTOMER',
     });
+
     const { password: _, ...result } = user;
-    return this.login({ sub: result.id, email: result.email, role: result.role });
+
+    // 🔒 FIX: Minimal payload for token
+    const tokenPayload = { sub: result.id };
+    return this.login(tokenPayload, result);
   }
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       const { password: _, ...result } = user;
-      return { sub: result.id,name: result.name, email: result.email, role: result.role };
+      return result; // Return full user info for login method
     }
     throw new UnauthorizedException('Invalid credentials');
   }
 
-  async login(user: any) {
-    const payload = { sub: user.sub,name: user.name, email: user.email, role: user.role };
-    return { 
-      access_token: this.jwtService.sign(payload, { secret: process.env.JWT_SECRET }), 
-      user 
+  async login(tokenPayload: any, userInfo?: any) {
+    // 🔒 FIX: Minimal token payload - only user ID
+    const payload = { sub: tokenPayload.sub };
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m', // 🔒 Short expiration
+    });
+
+    // 🔒 FIX: Return user info separately (not in token)
+    const user = userInfo || (await this.userService.findOne(tokenPayload.sub));
+    const { password: _, ...safeUser } = user;
+
+    return {
+      access_token: accessToken,
+      user: safeUser,
     };
   }
 
-  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
     const { email } = forgotPasswordDto;
     const user = await this.userService.findByEmail(email);
-    if (!user) throw new BadRequestException('User not found');
+
+    // 🔒 FIX: Don't reveal if user exists or not
+    if (!user) {
+      // Still return success to prevent email enumeration
+      return { message: 'If the email exists, a reset link has been sent' };
+    }
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 60 * 60 * 1000);
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    console.log('Forgot Password - User ID:', user.id);
-    console.log('Generated token:', token);
-    console.log('Expires:', expires);
-
-    const resetData: UpdateUserResetDto = { 
-      resetPasswordToken: token, 
-      resetPasswordExpires: expires.toISOString()
+    const resetData: UpdateUserResetDto = {
+      resetPasswordToken: await bcrypt.hash(token, 10), // 🔒 Hash reset token
+      resetPasswordExpires: expires.toISOString(),
     };
 
     await this.userService.updateResetToken(user.id, resetData);
 
-    const verifyUser = await this.userService.findByEmail(email);
-    if (verifyUser) {
-      console.log('Verify after update - Token:', verifyUser.resetPasswordToken);
-      console.log('Verify after update - Expires:', verifyUser.resetPasswordExpires);
-    } else {
-      console.log('ERROR: User not found after update!');
-    }
+    // 🔒 FIX: Use environment variable for base URL
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${baseUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
-    const resetUrl = `http://localhost:5000/api/auth/reset-password/${token}?email=${email}`;
-    console.log('Reset URL:', resetUrl);
-    
     await this.mailerService.sendMail({
       to: email,
       subject: 'Reset Password - E-commerce',
-      html: `<p>Click <a href="${resetUrl}">đây</a> để reset mật khẩu (expire 1 giờ).</p>`,
+      html: `
+        <p>You requested a password reset.</p>
+        <p>Click <a href="${resetUrl}">here</a> to reset your password (expires in 1 hour).</p>
+      `,
     });
 
-    return { message: 'Reset email sent' };
+    return { message: 'If the email exists, a reset link has been sent' };
   }
 
-  async resetPassword(token: string, email: string, password: string): Promise<{ message: string }> {
-    console.log('Reset Password Debug Start');
-    console.log('Email from form:', email);
-    console.log('Token from URL:', token);
-    console.log('Current time:', new Date().toISOString());
-    
+  async resetPassword(
+    token: string,
+    email: string,
+    password: string,
+  ): Promise<{ message: string }> {
     const user = await this.userService.findByEmail(email);
-    console.log('User found:', !!user);
-    
-    if (user) {
-      if (user.resetPasswordExpires) {
-        const expiresDate = new Date(user.resetPasswordExpires);
-        const now = new Date();
-        console.log('Time until expiry:', expiresDate.getTime() - now.getTime(), 'ms');
-        console.log('Is expired?', expiresDate < now);
-      }
-    }
-    
-    console.log('Reset Password Debug End');
-    
-    if (!user || 
-        !user.resetPasswordToken ||
-        user.resetPasswordToken !== token || 
-        !user.resetPasswordExpires || 
-        new Date(user.resetPasswordExpires) < new Date()
+
+    if (
+      !user ||
+      !user.resetPasswordToken ||
+      !user.resetPasswordExpires ||
+      new Date(user.resetPasswordExpires) < new Date()
     ) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    // 🔒 FIX: Compare hashed token
+    const isValidToken = await bcrypt.compare(token, user.resetPasswordToken);
+    if (!isValidToken) {
       throw new BadRequestException('Invalid or expired token');
     }
 
     await this.userService.resetPassword(user.id, password);
 
     return { message: 'Password reset successfully' };
+  }
+
+  // 🔒 NEW: Method to set httpOnly cookie
+  setAuthCookie(res: any, token: string) {
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+  }
+
+  // 🔒 NEW: Method to clear auth cookie
+  clearAuthCookie(res: any) {
+    res.cookie('access_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+    });
+  }
+ 
+  clearRefreshCookie(res: any) {
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0,
+    });
   }
 }

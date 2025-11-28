@@ -20,6 +20,8 @@ export class ResetPasswordDto {
   })
   @IsEmail()
   email: string;
+  token: string;
+  
 
   @ApiProperty({ 
     example: 'newpassword123', 
