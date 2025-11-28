@@ -96,11 +96,6 @@ const AppRoutes = () => {
             // <AdminRoute>
 
             <AdminLayout>
-              <div className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold">
-                  User Management Page (Admin)
-                </h1>
-              </div>
               <AdminUsersPage />
             </AdminLayout>
             // </AdminRoute>

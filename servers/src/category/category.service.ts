@@ -13,7 +13,13 @@ export class CategoryService {
   }
 
   async findAll(): Promise<Category[]> {
-    return this.prisma.category.findMany({ include: { products: true } });
+    return this.prisma.category.findMany({ 
+      include: { 
+        _count: {
+          select: { products: true }
+        }
+      } 
+    });
   }
 
   async findOne(id: number): Promise<Category | null> {

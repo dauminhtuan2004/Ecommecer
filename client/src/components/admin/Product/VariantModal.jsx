@@ -99,7 +99,7 @@ const VariantManager = ({ product, onClose, onSave, onImagesUploaded }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-100 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-opacity-100 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gray-50 px-6 py-4 border-b flex items-center justify-between">

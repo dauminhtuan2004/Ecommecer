@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import categoryService from '../../../services/categoryService';
 import toast from 'react-hot-toast';
 import Button from '../../../components/common/Button';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Search, ChevronUp, ChevronDown, FolderOpen } from 'lucide-react';
 
 const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState([]);
@@ -10,6 +10,9 @@ const AdminCategoriesPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDir, setSortDir] = useState('asc');
 
   useEffect(() => {
     loadCategories();
@@ -81,42 +84,95 @@ const AdminCategoriesPage = () => {
     setShowForm(false);
   };
 
+  const toggleSort = (key) => {
+    if (sortBy === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(key);
+      setSortDir('asc');
+    }
+  };
+
+  const filteredCategories = useMemo(() => {
+    let filtered = categories.filter((cat) =>
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    filtered.sort((a, b) => {
+      const getVal = (c) => {
+        if (sortBy === 'products') return c._count?.products || 0;
+        return (c.name || '').toLowerCase();
+      };
+      const va = getVal(a);
+      const vb = getVal(b);
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return filtered;
+  }, [categories, searchQuery, sortBy, sortDir]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý Danh mục</h1>
-          <p className="text-gray-600 mt-1">Tổng: {categories.length} danh mục</p>
+      <div className="mb-8">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+              Quản lý Danh mục
+            </h1>
+            <p className="text-gray-600">
+              Quản lý các danh mục sản phẩm trong hệ thống
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowForm(true)}
+            icon={Plus}
+            className="hidden md:inline-flex"
+          >
+            Thêm danh mục
+          </Button>
         </div>
-        <Button
-          onClick={() => setShowForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Thêm danh mục
-        </Button>
+        
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-xl border bg-white/80 backdrop-blur-sm p-4">
+            <p className="text-sm text-gray-600">Tổng danh mục</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{categories.length}</p>
+          </div>
+          <div className="rounded-xl border bg-white/80 backdrop-blur-sm p-4">
+            <p className="text-sm text-gray-600">Đang hiển thị</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">{filteredCategories.length}</p>
+          </div>
+          <div className="rounded-xl border bg-white/80 backdrop-blur-sm p-4">
+            <p className="text-sm text-gray-600">Tổng sản phẩm</p>
+            <p className="mt-1 text-2xl font-semibold text-gray-900">
+              {categories.reduce((sum, c) => sum + (c._count?.products || 0), 0)}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-900">
                 {editingId ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
               </h2>
               <button
                 onClick={handleCancel}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tên danh mục
                 </label>
                 <input
@@ -124,22 +180,24 @@ const AdminCategoriesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Nhập tên danh mục"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   required
+                  autoFocus
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-2">
                 <Button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg"
+                  variant="primary"
+                  className="flex-1"
                 >
                   {editingId ? 'Cập nhật' : 'Tạo mới'}
                 </Button>
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg"
+                  variant="secondary"
                 >
                   Hủy
                 </Button>
@@ -149,61 +207,128 @@ const AdminCategoriesPage = () => {
         </div>
       )}
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full text-center py-12">
-            <div className="inline-block animate-spin">
-              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-            </div>
-            <p className="text-gray-600 mt-4">Đang tải danh mục...</p>
+      {/* Search & Filter Bar */}
+      <div className="bg-white rounded-2xl border shadow-sm p-6 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex-1 relative">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm danh mục..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
           </div>
-        ) : categories.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-gray-500 text-lg">Chưa có danh mục nào</p>
-            <p className="text-gray-400">Nhấn "Thêm danh mục" để tạo mới</p>
+          <Button
+            onClick={() => setShowForm(true)}
+            icon={Plus}
+            className="md:hidden"
+          >
+            Thêm danh mục
+          </Button>
+        </div>
+      </div>
+
+      {/* Categories Table */}
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <p className="mt-4 text-gray-500">Đang tải dữ liệu...</p>
+          </div>
+        ) : filteredCategories.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+              <FolderOpen className="w-6 h-6 text-gray-400" />
+            </div>
+            <p className="mt-4 text-gray-700 font-medium">
+              {searchQuery ? 'Không tìm thấy danh mục phù hợp' : 'Chưa có danh mục nào'}
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchQuery ? 'Thử thay đổi từ khóa tìm kiếm' : 'Nhấn "Thêm danh mục" để tạo mới'}
+            </p>
+            {!searchQuery && (
+              <div className="mt-4">
+                <Button icon={Plus} onClick={() => setShowForm(true)}>Thêm danh mục</Button>
+              </div>
+            )}
           </div>
         ) : (
-          categories.map((category) => (
-            <div
-              key={category.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all p-6"
-            >
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 truncate">
-                  {category.name}
-                </h3>
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                  {category.description || 'Không có mô tả'}
-                </p>
-              </div>
-
-              {category._count?.products !== undefined && (
-                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-700 font-medium">
-                    {category._count.products} sản phẩm
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleEdit(category)}
-                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors"
-                >
-                  <Edit size={16} />
-                  Sửa
-                </Button>
-                <Button
-                  onClick={() => handleDelete(category.id)}
-                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 py-2 rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors"
-                >
-                  <Trash2 size={16} />
-                  Xóa
-                </Button>
-              </div>
-            </div>
-          ))
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    STT
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      className="inline-flex items-center gap-1 hover:text-gray-700"
+                      onClick={() => toggleSort('name')}
+                    >
+                      Tên danh mục
+                      {sortBy === 'name' && (
+                        sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      className="inline-flex items-center gap-1 hover:text-gray-700"
+                      onClick={() => toggleSort('products')}
+                    >
+                      Số sản phẩm
+                      {sortBy === 'products' && (
+                        sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {filteredCategories.map((category, idx) => (
+                  <tr key={category.id} className={idx % 2 === 0 ? 'bg-white hover:bg-gray-50 transition-colors' : 'bg-gray-50 hover:bg-gray-100 transition-colors'}>
+                    <td className="px-6 py-4 text-sm text-gray-600 font-medium">
+                      {idx + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                      {category.description && (
+                        <div className="text-xs text-gray-500 mt-0.5">{category.description}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {category._count?.products || 0} sản phẩm
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="inline-flex gap-1">
+                        <button
+                          onClick={() => handleEdit(category)}
+                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors inline-flex"
+                          title="Chỉnh sửa"
+                        >
+                          <Edit className="w-4 h-4 text-blue-600" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(category.id)}
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors inline-flex"
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
