@@ -2,19 +2,35 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Sidebar from './SideBar';
+import Header from '../customer/Header';
+import Footer from '../customer/Footer';
 
 const Layout = ({ children, showSidebar = false }) => {
   const { user } = useAuth(); 
   const isAdmin = user?.role === 'ADMIN';
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="flex flex-1">
-        {showSidebar && isAdmin && <Sidebar />}
-        <main className={`flex-1 ${showSidebar ? 'p-6' : 'p-4'}`}>
-          {children || <Outlet />}
-        </main>
+  // Admin Layout
+  if (showSidebar && isAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            {children || <Outlet />}
+          </main>
+        </div>
       </div>
+    );
+  }
+
+  // Customer Layout
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <Header />
+      <main className="flex-1">
+        {children || <Outlet />}
+      </main>
+      <Footer />
     </div>
   );
 };

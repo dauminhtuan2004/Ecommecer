@@ -1,35 +1,54 @@
-import api from '../config/api.config';
+import axiosInstance from '../config/api.config';
 
 const categoryService = {
   // Get all categories
-  getCategories: async () => {
-    const response = await api.get('/categories');
-    return response.data;
+  getAll: async (params = {}) => {
+    try {
+      const response = await axiosInstance.get('/categories', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
   },
 
   // Get single category
-  getCategory: async (id) => {
-    const response = await api.get(`/categories/${id}`);
+  getOne: async (id) => {
+    const response = await axiosInstance.get(`/categories/${id}`);
     return response.data;
   },
 
-  // Create category
-  createCategory: async (data) => {
-    const response = await api.post('/categories', data);
+  // Create category with image
+  create: async (formData) => {
+    const response = await axiosInstance.post('/categories', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   },
 
-  // Update category
-  updateCategory: async (id, data) => {
-    const response = await api.put(`/categories/${id}`, data);
+  // Update category with optional image
+  update: async (id, formData) => {
+    const response = await axiosInstance.put(`/categories/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   },
 
   // Delete category
-  deleteCategory: async (id) => {
-    const response = await api.delete(`/categories/${id}`);
+  delete: async (id) => {
+    const response = await axiosInstance.delete(`/categories/${id}`);
     return response.data;
   },
+
+  // Upload category image only
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosInstance.post('/categories/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  }
 };
 
 export default categoryService;

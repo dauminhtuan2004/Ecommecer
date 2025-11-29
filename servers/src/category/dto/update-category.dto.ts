@@ -1,5 +1,5 @@
-import { IsString, IsOptional } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsUrl } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateCategoryDto {
   @ApiProperty({ 
@@ -10,4 +10,13 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @ApiPropertyOptional({ 
+    example: 'https://example.com/category.jpg', 
+    description: 'URL ảnh danh mục mới' 
+  })
+  @IsString()
+  @IsUrl()
+  @IsOptional()
+  image?: string;
 }

@@ -16,25 +16,27 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { multerConfig } from '../upload/multer.config';
 
 @ApiTags('Products')
-@ApiBearerAuth('Authorization')
 @Controller('products')
-// @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductController {
   constructor(private productService: ProductService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all products' })
+  @ApiOperation({ summary: 'Get all products (Public)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'categoryId', required: false, type: Number })
+  @ApiQuery({ name: 'featured', required: false, type: Boolean })
+  @ApiQuery({ name: 'onSale', required: false, type: Boolean })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, type: String })
   @ApiResponse({ status: 200, description: 'List of products' })
   findAll(@Query() query: QueryProductDto) {
     return this.productService.findAll(query);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get product by ID' })
+  @ApiOperation({ summary: 'Get product by ID (Public)' })
   @ApiResponse({ status: 200, description: 'Product details' })
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);

@@ -4,14 +4,15 @@ import toast from 'react-hot-toast';
 import Button from '../../../components/common/Button';
 import Loading from '../../../components/common/Loading';
 import Pagination from '../../../components/common/Pagination';
-import { Plus, Edit, Trash2, X, Search, ChevronUp, ChevronDown, FolderOpen } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Search, ChevronUp, ChevronDown, FolderOpen, Upload, ImageIcon } from 'lucide-react';
 
 const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '' });
+  const [formData, setFormData] = useState({ name: '', image: null });
+  const [imagePreview, setImagePreview] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -25,7 +26,7 @@ const AdminCategoriesPage = () => {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const data = await categoryService.getCategories();
+      const data = await categoryService.getAll();
       setCategories(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       toast.error('Không thể tải danh mục');
@@ -43,15 +44,25 @@ const AdminCategoriesPage = () => {
         return;
       }
 
+      // Create FormData for API
+      const data = new FormData();
+      data.append('name', formData.name.trim());
+      
+      // Add image file if selected
+      if (formData.image) {
+        data.append('image', formData.image);
+      }
+
       if (editingId) {
-        await categoryService.updateCategory(editingId, formData);
+        await categoryService.update(editingId, data);
         toast.success('Cập nhật danh mục thành công');
       } else {
-        await categoryService.createCategory(formData);
+        await categoryService.create(data);
         toast.success('Tạo danh mục thành công');
       }
       
-      setFormData({ name: '' });
+      setFormData({ name: '', image: null });
+      setImagePreview(null);
       setEditingId(null);
       setShowForm(false);
       loadCategories();
@@ -63,15 +74,47 @@ const AdminCategoriesPage = () => {
   };
 
   const handleEdit = (category) => {
-    setFormData({ name: category.name });
+    setFormData({ name: category.name, image: null });
+    setImagePreview(category.image || null);
     setEditingId(category.id);
     setShowForm(true);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Vui lòng chọn file ảnh');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Kích thước ảnh không được vượt quá 5MB');
+        return;
+      }
+      
+      setFormData({ ...formData, image: file });
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, image: null });
+    setImagePreview(null);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Bạn chắc chắn muốn xóa danh mục này?')) {
       try {
-        await categoryService.deleteCategory(id);
+        await categoryService.delete(id);
         toast.success('Xóa danh mục thành công');
         loadCategories();
       } catch (error) {
@@ -83,7 +126,8 @@ const AdminCategoriesPage = () => {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '' });
+    setFormData({ name: '', image: null });
+    setImagePreview(null);
     setEditingId(null);
     setShowForm(false);
   };
@@ -202,6 +246,47 @@ const AdminCategoriesPage = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hình ảnh danh mục (tùy chọn)
+                </label>
+                
+                {imagePreview ? (
+                  <div className="relative inline-block">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                        <p className="mb-1 text-sm text-gray-500">
+                          <span className="font-semibold">Nhấn để tải ảnh</span> hoặc kéo thả
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF (MAX. 5MB)</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button
                   type="submit"
@@ -276,6 +361,9 @@ const AdminCategoriesPage = () => {
                     STT
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hình ảnh
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
                       className="inline-flex items-center gap-1 hover:text-gray-700"
                       onClick={() => toggleSort('name')}
@@ -307,6 +395,19 @@ const AdminCategoriesPage = () => {
                   <tr key={category.id} className={idx % 2 === 0 ? 'bg-white hover:bg-gray-50 transition-colors' : 'bg-gray-50 hover:bg-gray-100 transition-colors'}>
                     <td className="px-6 py-4 text-sm text-gray-600 font-medium">
                       {(currentPage - 1) * itemsPerPage + idx + 1}
+                    </td>
+                    <td className="px-6 py-4">
+                      {category.image ? (
+                        <img 
+                          src={category.image} 
+                          alt={category.name}
+                          className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-gray-400" />
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">{category.name}</div>

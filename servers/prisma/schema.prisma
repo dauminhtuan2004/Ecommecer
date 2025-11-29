@@ -60,6 +60,7 @@ model Brand {
 model Category {
   id        Int       @id @default(autoincrement())
   name      String    @unique
+  image     String?
   products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -252,4 +253,18 @@ model OrderItem {
 
   @@index([orderId])
   @@index([variantId])
+}
+
+model Banner {
+  id          Int      @id @default(autoincrement())
+  title       String
+  subtitle    String?
+  image       String
+  video       String?
+  link        String?
+  buttonText  String?  @default("Mua ngay")
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

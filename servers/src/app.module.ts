@@ -13,6 +13,7 @@ import { CategoryModule } from './category/category.module';
 import { PaymentModule } from './payment/payment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DiscountModule } from './discount/discount.module';
+import { BannerModule } from './banner/banner.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { DiscountModule } from './discount/discount.module';
     CategoryModule,
     PaymentModule,
     DashboardModule,
-    DiscountModule
+    DiscountModule,
+    BannerModule
   ],
   providers: [PrismaService],
   exports: [PrismaService],
