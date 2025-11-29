@@ -11,6 +11,8 @@ import { UploadModule } from './upload/upload.module';
 import { CacheModule } from './cache/cache.module';  
 import { CategoryModule } from './category/category.module';
 import { PaymentModule } from './payment/payment.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { DiscountModule } from './discount/discount.module';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { PaymentModule } from './payment/payment.module';
     UploadModule,
     CacheModule,
     CategoryModule,
-    PaymentModule
+    PaymentModule,
+    DashboardModule,
+    DiscountModule
   ],
   providers: [PrismaService],
   exports: [PrismaService],

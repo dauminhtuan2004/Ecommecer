@@ -76,12 +76,13 @@ export const useProducts = () => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   }, []);
 
-  // Auto load on mount
+  // Load initial data on mount
   useEffect(() => {
-    loadAllData();
-  }, [loadAllData]);
+    loadCategories();
+    loadBrands();
+  }, []);
 
-  // Auto reload when filters change
+  // Auto reload when filters change (debounced)
   useEffect(() => {
     const timer = setTimeout(() => {
       loadProducts();

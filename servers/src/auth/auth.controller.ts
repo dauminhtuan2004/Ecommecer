@@ -46,10 +46,11 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     const result = await this.authService.register(registerDto);
     
-    // 🔒 FIX: Set httpOnly cookie instead of returning token in body
+    // Set httpOnly cookie
     this.authService.setAuthCookie(res, result.access_token);
     
     res.status(HttpStatus.CREATED).json({
+      access_token: result.access_token,
       user: result.user,
       message: 'User registered successfully'
     });
@@ -67,10 +68,11 @@ export class AuthController {
     );
     const result = await this.authService.login({ sub: user.id }, user);
     
-    // 🔒 FIX: Set httpOnly cookie
+    // Set httpOnly cookie
     this.authService.setAuthCookie(res, result.access_token);
     
     res.json({
+      access_token: result.access_token,
       user: result.user,
       message: 'Login successful'
     });

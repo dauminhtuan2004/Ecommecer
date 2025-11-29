@@ -1,5 +1,3 @@
-// src/components/auth/SocialLoginButton.jsx
-
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
     <path

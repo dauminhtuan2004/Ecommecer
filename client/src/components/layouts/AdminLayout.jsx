@@ -1,10 +1,16 @@
-// src/components/admin/AdminLayout.jsx
-import { useState } from 'react';
+import { useState, useEffect, memo } from 'react';
 import AdminHeader from '../admin/Header';
 import AdminSidebar from '../../components/layouts/SideBar';
 
-const AdminLayout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+const AdminLayout = memo(({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebarOpen');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', JSON.stringify(sidebarOpen));
+  }, [sidebarOpen]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -27,6 +33,8 @@ const AdminLayout = ({ children }) => {
       </main>
     </div>
   );
-};
+});
+
+AdminLayout.displayName = 'AdminLayout';
 
 export default AdminLayout;

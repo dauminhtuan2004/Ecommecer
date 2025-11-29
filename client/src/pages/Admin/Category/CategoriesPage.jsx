@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import categoryService from '../../../services/categoryService';
 import toast from 'react-hot-toast';
 import Button from '../../../components/common/Button';
+import Loading from '../../../components/common/Loading';
+import Pagination from '../../../components/common/Pagination';
 import { Plus, Edit, Trash2, X, Search, ChevronUp, ChevronDown, FolderOpen } from 'lucide-react';
 
 const AdminCategoriesPage = () => {
@@ -13,6 +15,8 @@ const AdminCategoriesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadCategories();
@@ -112,6 +116,18 @@ const AdminCategoriesPage = () => {
     
     return filtered;
   }, [categories, searchQuery, sortBy, sortDir]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredCategories.length / itemsPerPage));
+  const paginatedCategories = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredCategories.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredCategories, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, sortBy, sortDir]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
@@ -233,10 +249,7 @@ const AdminCategoriesPage = () => {
       {/* Categories Table */}
       <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            <p className="mt-4 text-gray-500">Đang tải dữ liệu...</p>
-          </div>
+          <Loading text="Đang tải dữ liệu..." />
         ) : filteredCategories.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
@@ -290,10 +303,10 @@ const AdminCategoriesPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {filteredCategories.map((category, idx) => (
+                {paginatedCategories.map((category, idx) => (
                   <tr key={category.id} className={idx % 2 === 0 ? 'bg-white hover:bg-gray-50 transition-colors' : 'bg-gray-50 hover:bg-gray-100 transition-colors'}>
                     <td className="px-6 py-4 text-sm text-gray-600 font-medium">
-                      {idx + 1}
+                      {(currentPage - 1) * itemsPerPage + idx + 1}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">{category.name}</div>
@@ -328,6 +341,17 @@ const AdminCategoriesPage = () => {
                 ))}
               </tbody>
             </table>
+            
+            {/* Pagination */}
+            {filteredCategories.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                itemsCount={paginatedCategories.length}
+                totalItems={filteredCategories.length}
+              />
+            )}
           </div>
         )}
       </div>

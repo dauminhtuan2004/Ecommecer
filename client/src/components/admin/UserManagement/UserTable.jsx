@@ -1,4 +1,3 @@
-// src/components/users/UserTable.jsx
 import React, { useMemo, useState } from 'react';
 import { Edit2, Trash2, MapPin, ChevronUp, ChevronDown } from 'lucide-react';
 import Badge from '../../common/Badge';

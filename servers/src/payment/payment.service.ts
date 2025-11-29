@@ -34,7 +34,7 @@ export class PaymentService {
     const payment = await this.prisma.payment.create({
       data: {
         ...data,
-        amount: order.total + order.taxAmount, // Tính từ order
+        amount: order.total, // Total đã bao gồm thuế
         transactionId,
       },
       include: { order: true }, // Include order details
@@ -130,7 +130,19 @@ export class PaymentService {
         where,
         skip,
         take: limit,
-        include: { order: true },
+        include: { 
+          order: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                }
+              }
+            }
+          } 
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.payment.count({ where }),

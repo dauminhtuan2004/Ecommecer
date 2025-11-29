@@ -21,6 +21,7 @@ const ProductsPage = () => {
   } = useProducts();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [editingVariant, setEditingVariant] = useState(null);
   
   const {
     // States
@@ -114,7 +115,11 @@ const ProductsPage = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onDuplicate={handleDuplicate}
-        onManageVariants={handleManageVariants}
+        onManageVariants={(product, variant) => {
+          setManagingVariantsProduct(product);
+          setEditingVariant(variant || null);
+          setShowVariantManager(true);
+        }}
         selectedProducts={selectedProducts}
         onSelectAll={handleSelectAll}
         onSelectProduct={handleSelectProduct}
@@ -138,12 +143,19 @@ const ProductsPage = () => {
       {showVariantManager && managingVariantsProduct && (
         <VariantManager
           product={managingVariantsProduct}
+          editingVariant={editingVariant}
           onClose={() => {
             setShowVariantManager(false);
             setManagingVariantsProduct(null);
+            setEditingVariant(null);
           }}
           onSave={handleSaveVariants}
-          onImagesUploaded={loadProducts}
+          onImagesUploaded={async (variantId, images) => {
+            // Upload images for this variant
+            const productService = (await import('../../../services/productService')).default;
+            await productService.uploadImages(managingVariantsProduct.id, images, { variantId });
+            loadProducts();
+          }}
         />
       )}
 

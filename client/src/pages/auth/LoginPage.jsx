@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth'; // Hook handleLogin
-import Input from '../../components/common/Input'; // ✅ default import
-import Button from '../../components/common/Button'; // ✅ default import
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
+import Loading from '../../components/common/Loading';
 import AuthLayout from '../../components/auth/AuthLayout';
 import toast from 'react-hot-toast';
 
@@ -83,7 +84,7 @@ const LoginPage = () => {
         </div>
 
         <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
-          {isLoading ? 'Loading...' : 'Sign in'}
+          {isLoading ? <Loading size="sm" text="" /> : 'Sign in'}
         </Button>
 
         <Button

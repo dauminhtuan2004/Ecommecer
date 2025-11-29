@@ -1,4 +1,3 @@
-// src/components/admin/AdminSidebar.jsx
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -217,24 +216,7 @@ const AdminSidebar = ({ isOpen }) => {
         </nav>
 
         {/* Sidebar Footer */}
-        {isOpen && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white to-transparent">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Package size={20} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">Upgrade to Pro</p>
-                  <p className="text-xs text-gray-600">Get more features</p>
-                </div>
-              </div>
-              <button className="w-full mt-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                Upgrade Now
-              </button>
-            </div>
-          </div>
-        )}
+        
       </aside>
 
       {/* Mobile Overlay */}

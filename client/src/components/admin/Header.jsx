@@ -1,4 +1,3 @@
-// src/components/admin/AdminHeader.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -11,7 +10,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/authContext";
 
 const AdminHeader = ({ sidebarOpen, setSidebarOpen }) => {
   const { user, logout } = useAuth();

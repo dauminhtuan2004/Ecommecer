@@ -1,4 +1,3 @@
-// src/components/users/AddressList.jsx
 import React from 'react';
 import AddressCard from './AddressCard';
 

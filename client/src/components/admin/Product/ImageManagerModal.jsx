@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import Modal from '../../common/Modal';
 import ImageUploadSection from './ImageUploadSection';
 import productService from '../../../services/productService';
 import toast from 'react-hot-toast';
 import Button from '../../common/Button';
-import { X } from 'lucide-react';
 
 const ImageManagerModal = ({ product, isOpen, onClose, onUpdated }) => {
   const [images, setImages] = useState(product?.images || []);
@@ -54,16 +54,14 @@ const ImageManagerModal = ({ product, isOpen, onClose, onUpdated }) => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-lg w-full max-w-3xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Quản lý ảnh - {product.name}</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
-        </div>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Quản lý ảnh - ${product?.name || ''}`}
+      size="lg"
+    >
+      <div className="space-y-4">
         <ImageUploadSection
           product={product}
           images={images}
@@ -71,12 +69,12 @@ const ImageManagerModal = ({ product, isOpen, onClose, onUpdated }) => {
           onImageUpload={handleImageUpload}
           onRemoveImage={handleRemoveImage}
         />
-
-        <div className="mt-4 flex justify-end">
-          <Button variant="secondary" onClick={onClose}>Đóng</Button>
+        
+        <div className="flex justify-end pt-3 border-t">
+          <Button variant="secondary" onClick={onClose} className="text-sm px-4 py-2">Đóng</Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

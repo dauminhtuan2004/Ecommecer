@@ -1,4 +1,3 @@
-// src/components/admin/DeleteConfirmModal.jsx
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 import { AlertTriangle } from 'lucide-react';

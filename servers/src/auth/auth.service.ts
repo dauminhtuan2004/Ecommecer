@@ -35,8 +35,6 @@ export class AuthService {
     });
 
     const { password: _, ...result } = user;
-
-    // 🔒 FIX: Minimal payload for token
     const tokenPayload = { sub: result.id };
     return this.login(tokenPayload, result);
   }
@@ -45,22 +43,25 @@ export class AuthService {
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
       const { password: _, ...result } = user;
-      return result; // Return full user info for login method
+      return result;
     }
     throw new UnauthorizedException('Invalid credentials');
   }
 
   async login(tokenPayload: any, userInfo?: any) {
-    // 🔒 FIX: Minimal token payload - only user ID
-    const payload = { sub: tokenPayload.sub };
+    const user = userInfo || (await this.userService.findOne(tokenPayload.sub));
+    
+    const payload = { 
+      sub: tokenPayload.sub,
+      email: user.email,
+      role: user.role
+    };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: '15m', // 🔒 Short expiration
+      expiresIn: '15m',
     });
 
-    // 🔒 FIX: Return user info separately (not in token)
-    const user = userInfo || (await this.userService.findOne(tokenPayload.sub));
     const { password: _, ...safeUser } = user;
 
     return {
@@ -75,23 +76,20 @@ export class AuthService {
     const { email } = forgotPasswordDto;
     const user = await this.userService.findByEmail(email);
 
-    // 🔒 FIX: Don't reveal if user exists or not
     if (!user) {
-      // Still return success to prevent email enumeration
       return { message: 'If the email exists, a reset link has been sent' };
     }
 
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
 
     const resetData: UpdateUserResetDto = {
-      resetPasswordToken: await bcrypt.hash(token, 10), // 🔒 Hash reset token
+      resetPasswordToken: await bcrypt.hash(token, 10),
       resetPasswordExpires: expires.toISOString(),
     };
 
     await this.userService.updateResetToken(user.id, resetData);
 
-    // 🔒 FIX: Use environment variable for base URL
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${baseUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
@@ -134,7 +132,6 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  // 🔒 NEW: Method to set httpOnly cookie
   setAuthCookie(res: any, token: string) {
     res.cookie('access_token', token, {
       httpOnly: true,
@@ -144,7 +141,6 @@ export class AuthService {
     });
   }
 
-  // 🔒 NEW: Method to clear auth cookie
   clearAuthCookie(res: any) {
     res.cookie('access_token', '', {
       httpOnly: true,
@@ -153,13 +149,13 @@ export class AuthService {
       maxAge: 0,
     });
   }
- 
-  clearRefreshCookie(res: any) {
-    res.cookie('refresh_token', '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 0,
-    });
-  }
+
+  // clearRefreshCookie(res: any) {
+  //   res.cookie('refresh_token', '', {
+  //     httpOnly: true,
+  //     secure: process.env.NODE_ENV === 'production',
+  //     sameSite: 'lax',
+  //     maxAge: 0,
+  //   });
+  // }
 }

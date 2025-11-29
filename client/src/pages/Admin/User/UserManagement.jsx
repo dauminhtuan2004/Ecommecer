@@ -1,6 +1,6 @@
 // src/pages/AdminUserManagement.jsx
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useUsers } from '../../../hooks/useUsers';
 import userService from '../../../services/userService';
 
@@ -9,6 +9,8 @@ import Input from '../../../components/common/Input';
 import Select from '../../../components/common/Select';
 import Button from '../../../components/common/Button';
 import Modal from '../../../components/common/Modal';
+import Loading from '../../../components/common/Loading';
+import Pagination from '../../../components/common/Pagination';
 import UserTable from '../../../components/admin/UserManagement/UserTable';
 import UserForm from '../../../components/admin/UserManagement/UserForm';
 import AddressList from '../../../components/admin/UserManagement/AddressList';
@@ -79,18 +81,13 @@ const AdminUserManagement = () => {
     }
   };
 
-  // Pagination handlers
-  const handlePrevPage = () => {
-    if (pagination.page > 1) {
-      setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
-    }
+  // Pagination handler
+  const handlePageChange = (newPage) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
-  const handleNextPage = () => {
-    if (filteredUsers.length >= pagination.limit) {
-      setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
-    }
-  };
+  // Calculate total pages (estimate based on current data)
+  const totalPages = Math.max(1, Math.ceil(users.length / pagination.limit));
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -136,10 +133,7 @@ const AdminUserManagement = () => {
         {/* Table */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-500">Đang tải dữ liệu...</p>
-            </div>
+            <Loading text="Đang tải dữ liệu..." />
           ) : error ? (
             <div className="p-12 text-center">
               <p className="text-red-600">Lỗi: {error}</p>
@@ -158,31 +152,11 @@ const AdminUserManagement = () => {
 
           {/* Pagination */}
           {!loading && !error && filteredUsers.length > 0 && (
-            <div className="px-6 py-4 border-t flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                Hiển thị {filteredUsers.length} người dùng (Trang {pagination.page})
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={ChevronLeft}
-                  onClick={handlePrevPage}
-                  disabled={pagination.page === 1}
-                >
-                  Trước
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleNextPage}
-                  disabled={filteredUsers.length < pagination.limit}
-                >
-                  Sau
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           )}
         </div>
       </div>

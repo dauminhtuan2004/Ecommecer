@@ -1,25 +1,29 @@
-// src/components/common/Select.jsx
 import React from 'react';
 
 const Select = ({ 
   label, 
   options = [], 
-  error, 
+  error,
+  required = false,
   className = '',
   ...props 
 }) => {
+  const baseClasses = 'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 cursor-pointer bg-white';
+  
+  const variantClasses = error 
+    ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200 hover:border-gray-400';
+
   return (
-    <div className={`space-y-1 ${className}`}>
+    <div className={`space-y-1.5 ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-gray-700">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <select
         {...props}
-        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-          error ? 'border-red-500' : 'border-gray-300'
-        }`}
+        className={`${baseClasses} ${variantClasses}`}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -28,7 +32,7 @@ const Select = ({
         ))}
       </select>
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="mt-1.5 text-sm text-red-600">{error}</p>
       )}
     </div>
   );

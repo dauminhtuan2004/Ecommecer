@@ -1,4 +1,3 @@
-// src/components/common/Badge.jsx
 import React from 'react';
 
 const Badge = ({ children, variant = 'default', className = '' }) => {

@@ -1,6 +1,6 @@
-import { Package, Layers } from 'lucide-react';
+import { Package, Layers, Edit2, Trash2 } from 'lucide-react';
 
-const ProductDetails = ({ product }) => {
+const ProductDetails = ({ product, onEditVariant, onDeleteVariant }) => {
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -50,12 +50,32 @@ const ProductDetails = ({ product }) => {
                 {product.variants.map((variant) => {
                   const variantImages = product.images?.filter(img => img.variantId === variant.id) || [];
                   return (
-                    <div key={variant.id} className="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
+                    <div key={variant.id} className="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs hover:bg-slate-100 transition-colors">
                       <div className="flex items-start justify-between mb-2">
                         <span className="font-semibold text-gray-900">
                           {variant.size || 'N/A'} • {variant.color || 'N/A'}
                         </span>
-                        <span className="text-gray-500">SKU: {variant.sku || '—'}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">SKU: {variant.sku || '—'}</span>
+                          {onEditVariant && (
+                            <button
+                              onClick={() => onEditVariant(variant)}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors"
+                              title="Sửa"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          )}
+                          {onDeleteVariant && (
+                            <button
+                              onClick={() => onDeleteVariant(variant)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors"
+                              title="Xóa"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <div className="grid grid-cols-3 gap-2 mb-2">
                         <div>

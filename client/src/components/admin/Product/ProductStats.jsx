@@ -1,64 +1,51 @@
-import { Package, AlertTriangle, XCircle } from "lucide-react";
+import { Package, AlertTriangle, XCircle, DollarSign } from "lucide-react";
+import StatsCard from "../../common/StatsCard";
 
 const ProductStats = ({ products, formatPrice, getTotalStock }) => {
   const stats = [
     {
-      label: "Total Products",
+      title: "Total Products",
       value: products.length,
       icon: Package,
-      color: "blue",
+      bgColor: "bg-blue-100",
+      iconColor: "text-blue-600",
+      borderColor: "border-blue-500",
     },
     {
-      label: "Total Value",
+      title: "Total Value",
       value: formatPrice(
         products.reduce((sum, p) => sum + (p.basePrice || 0), 0)
       ),
-      icon: "💰",
-      color: "green",
+      icon: DollarSign,
+      bgColor: "bg-green-100",
+      iconColor: "text-green-600",
+      borderColor: "border-green-500",
     },
     {
-      label: "Low Stock",
+      title: "Low Stock",
       value: products.filter((p) => {
         const stock = getTotalStock(p.variants);
         return stock > 0 && stock < 10;
       }).length,
       icon: AlertTriangle,
-      color: "orange",
+      bgColor: "bg-orange-100",
+      iconColor: "text-orange-600",
+      borderColor: "border-orange-500",
     },
     {
-      label: "Out of Stock",
+      title: "Out of Stock",
       value: products.filter((p) => getTotalStock(p.variants) === 0).length,
       icon: XCircle,
-      color: "red",
+      bgColor: "bg-red-100",
+      iconColor: "text-red-600",
+      borderColor: "border-red-500",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       {stats.map((stat, index) => (
-        <div key={index} className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">{stat.label}</p>
-              <p
-                className={`text-2xl font-bold ${
-                  stat.color === "orange"
-                    ? "text-orange-600"
-                    : stat.color === "red"
-                    ? "text-red-600"
-                    : "text-gray-900"
-                }`}
-              >
-                {stat.value}
-              </p>
-            </div>
-            {typeof stat.icon === "string" ? (
-              <div className="text-green-600 text-2xl">{stat.icon}</div>
-            ) : (
-              <stat.icon className={`text-${stat.color}-600`} size={32} />
-            )}
-          </div>
-        </div>
+        <StatsCard key={index} {...stat} />
       ))}
     </div>
   );

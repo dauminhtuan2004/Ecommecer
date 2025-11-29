@@ -12,33 +12,33 @@ const VariantSection = ({
   basePrice
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Section Header */}
-      <div className="border-b pb-3 flex items-center justify-between">
+      <div className="border-b pb-2 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Biến Thể Sản Phẩm</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            Thêm các phiên bản khác nhau của sản phẩm (size, màu, v.v.)
+          <h3 className="text-base font-semibold text-gray-900">Biến Thể Sản Phẩm</h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Thêm các phiên bản khác nhau (size, màu, v.v.)
           </p>
         </div>
         <Button
           type="button"
           onClick={onAddVariant}
           size="sm"
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5"
         >
-          <Plus size={18} />
-          Thêm Variant
+          <Plus size={16} />
+          Thêm
         </Button>
       </div>
 
       {/* Info Alert */}
-      <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-800">
-            <p className="font-semibold mb-1">💡 Lưu ý về Variants</p>
-            <ul className="list-disc list-inside space-y-1 text-xs">
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <div className="flex items-start gap-2">
+          <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-amber-800">
+            <p className="font-semibold mb-0.5">💡 Lưu ý</p>
+            <ul className="list-disc list-inside space-y-0.5 text-xs">
               <li>Nếu không nhập giá, sẽ sử dụng <strong>Giá Cơ Bản</strong> ({new Intl.NumberFormat('vi-VN').format(basePrice || 0)} VND)</li>
               <li>SKU giúp quản lý kho hàng dễ dàng hơn</li>
               <li>Ít nhất phải có <strong>1 variant</strong> có dữ liệu</li>
@@ -48,32 +48,32 @@ const VariantSection = ({
       </div>
 
       {/* Variants List */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {variants.map((variant, index) => (
           <div
             key={index}
-            className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-all"
+            className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:border-blue-300 transition-all"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gray-700">
                 Variant #{index + 1}
               </span>
               {variants.length > 1 && (
                 <button
                   type="button"
                   onClick={() => onRemoveVariant(index)}
-                  className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                  className="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
                   title="Xóa variant này"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               {/* Size */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
                   Size
                 </label>
                 <input
@@ -81,27 +81,27 @@ const VariantSection = ({
                   placeholder="M, L, XL..."
                   value={variant.size || ''}
                   onChange={(e) => onVariantChange(index, 'size', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500 transition-all"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-200"
                 />
               </div>
 
               {/* Color */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Màu Sắc
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                  Màu
                 </label>
                 <input
                   type="text"
                   placeholder="Đỏ, Xanh..."
                   value={variant.color || ''}
                   onChange={(e) => onVariantChange(index, 'color', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500 transition-all"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-200"
                 />
               </div>
 
               {/* SKU */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
                   SKU
                 </label>
                 <input
@@ -109,14 +109,14 @@ const VariantSection = ({
                   placeholder="SKU-001"
                   value={variant.sku || ''}
                   onChange={(e) => onVariantChange(index, 'sku', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500 transition-all"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-200"
                 />
               </div>
 
               {/* Price Override */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Giá (VND)
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                  Giá
                 </label>
                 <input
                   type="number"
@@ -125,14 +125,14 @@ const VariantSection = ({
                   placeholder={basePrice || '0'}
                   value={variant.price || ''}
                   onChange={(e) => onVariantChange(index, 'price', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500 transition-all"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-200"
                 />
               </div>
 
               {/* Stock */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Tồn Kho
+                <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                  Tồn
                 </label>
                 <input
                   type="number"
@@ -140,12 +140,12 @@ const VariantSection = ({
                   placeholder="0"
                   value={variant.stock || ''}
                   onChange={(e) => onVariantChange(index, 'stock', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-blue-500 focus:ring-blue-500 transition-all"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:border-blue-500 focus:ring-blue-200"
                 />
               </div>
             </div>
             {/* Upload images for this variant (only for saved variants) */}
-            <div className="mt-3">
+            <div className="mt-2">
               {variant.id ? (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">

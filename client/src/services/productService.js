@@ -101,9 +101,7 @@ export const productService = {
   // Get categories
   getCategories: async () => {
     try {
-      console.log('📡 Fetching categories from API...');
       const response = await axiosInstance.get("/categories");
-      console.log('✅ Categories API response:', response);
       
       // NestJS trả về trực tiếp array, không có data property
       if (Array.isArray(response)) {
@@ -111,11 +109,9 @@ export const productService = {
       } else if (Array.isArray(response.data)) {
         return { data: response.data };
       } else {
-        console.warn('⚠️ Unexpected categories response format:', response);
         return { data: [] };
       }
     } catch (error) {
-      console.error('❌ Error fetching categories:', error);
       // Fallback data
       return {
         data: [
@@ -131,20 +127,16 @@ export const productService = {
   // Get brands
   getBrands: async () => {
     try {
-      console.log('📡 Fetching brands from API...');
       const response = await axiosInstance.get("/brands");
-      console.log('✅ Brands API response:', response);
       
       if (Array.isArray(response)) {
         return { data: response };
       } else if (Array.isArray(response.data)) {
         return { data: response.data };
       } else {
-        console.warn('⚠️ Unexpected brands response format:', response);
         return { data: [] };
       }
     } catch (error) {
-      console.error('❌ Error fetching brands:', error);
       // Fallback data
       return {
         data: [

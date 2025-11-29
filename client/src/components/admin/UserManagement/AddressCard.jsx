@@ -1,4 +1,3 @@
-// src/components/users/AddressCard.jsx
 import React, { useState } from 'react';
 import { Check, Trash2 } from 'lucide-react';
 import Badge from '../../common/Badge';
@@ -13,7 +12,7 @@ const AddressCard = ({ address, userId, onSetDefault, onDelete }) => {
     try {
       await onSetDefault(userId, address.id);
     } catch (err) {
-      console.error('Error setting default:', err);
+      // Error handled by parent component
     } finally {
       setLoading(false);
     }

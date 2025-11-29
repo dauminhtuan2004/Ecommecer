@@ -3,10 +3,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import  authService  from '../../services/authService';
-import  Input  from '../../components/common/Input';
-import  Button from '../../components/common/Button';
-// import { Alert } from '../../components/common/Alert';
-// import { Loading } from '../../components/common/Loading';
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
+import Loading from '../../components/common/Loading';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '', name: '' });
@@ -91,7 +90,7 @@ const RegisterPage = () => {
           />
 
           <Button type="submit" disabled={isLoading} fullWidth className="bg-indigo-600 hover:bg-indigo-700">
-            {isLoading ? <Loading /> : 'Sign up'}
+            {isLoading ? <Loading size="sm" text="" /> : 'Sign up'}
           </Button>
         </form>
 

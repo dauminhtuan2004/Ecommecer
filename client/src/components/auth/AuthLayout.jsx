@@ -1,4 +1,3 @@
-// src/components/auth/AuthLayout.jsx
 import { Link } from 'react-router-dom';
 
 const AuthLayout = ({ children, title, subtitle }) => {

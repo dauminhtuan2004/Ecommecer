@@ -1,0 +1,115 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../../contexts/authContext';
+import ProfileCard from '../../../components/admin/Profile/ProfileCard';
+import ProfileForm from '../../../components/admin/Profile/ProfileForm';
+import AddressList from '../../../components/admin/Profile/AddressList';
+import AddressModal from '../../../components/admin/Profile/AddressModal';
+import { useProfileForm, useAddressForm } from '../../../hooks/useProfileForm';
+
+const ProfilePage = () => {
+  const { user: authUser, updateProfile } = useAuth();
+  const [addresses, setAddresses] = useState([]);
+
+  const loadAddresses = async () => {
+    try {
+      // TODO: Implement address API endpoint
+      // const data = await addressService.getAddresses();
+      // setAddresses(data);
+      setAddresses([]); // Placeholder
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadAddresses();
+  }, []);
+
+  // Profile form hook
+  const {
+    profileForm,
+    setProfileForm,
+    loading: profileLoading,
+    handleProfileUpdate,
+  } = useProfileForm(authUser, updateProfile);
+
+  // Address form hook
+  const {
+    addressForm,
+    setAddressForm,
+    showAddressModal,
+    editingAddress,
+    loading: addressLoading,
+    openAddressModal,
+    closeAddressModal,
+    handleAddressSubmit,
+    handleDeleteAddress,
+  } = useAddressForm(loadAddresses);
+
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(date));
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+            Thông tin cá nhân
+          </h1>
+          <p className="text-gray-600">
+            Quản lý thông tin tài khoản và địa chỉ giao hàng của bạn
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Profile Card */}
+          <div className="lg:col-span-1">
+            <ProfileCard 
+              user={authUser} 
+              addressCount={addresses.length}
+              formatDate={formatDate}
+            />
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Profile Information */}
+            <ProfileForm
+              profileForm={profileForm}
+              setProfileForm={setProfileForm}
+              onSubmit={handleProfileUpdate}
+              loading={profileLoading}
+            />
+
+            {/* Addresses */}
+            <AddressList
+              addresses={addresses}
+              onAdd={() => openAddressModal()}
+              onEdit={openAddressModal}
+              onDelete={handleDeleteAddress}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Address Modal */}
+      <AddressModal
+        isOpen={showAddressModal}
+        onClose={closeAddressModal}
+        addressForm={addressForm}
+        setAddressForm={setAddressForm}
+        onSubmit={handleAddressSubmit}
+        loading={addressLoading}
+        isEditing={!!editingAddress}
+      />
+    </div>
+  );
+};
+
+export default ProfilePage;

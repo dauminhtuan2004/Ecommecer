@@ -8,20 +8,20 @@ const ImageUploadSection = ({
   onRemoveImage 
 }) => {
   return (
-    <div className="border-t pt-6">
-      <label className="text-lg font-semibold text-gray-900 mb-4 block">
+    <div>
+      <label className="text-base font-semibold text-gray-900 mb-3 block">
         Hình Ảnh Sản Phẩm
       </label>
       
       {!product?.id && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-          <p className="text-sm text-yellow-800">
-            ℹ️ Vui lòng <strong>lưu sản phẩm trước</strong> để có thể upload ảnh
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+          <p className="text-xs text-yellow-800">
+            ℹ️ Vui lòng <strong>lưu sản phẩm trước</strong> để upload ảnh
           </p>
         </div>
       )}
 
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
         <input
           type="file"
           id="image-upload"
@@ -35,26 +35,26 @@ const ImageUploadSection = ({
           htmlFor="image-upload" 
           className={`cursor-pointer ${(!product?.id || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <Upload className="mx-auto mb-4 text-gray-400" size={48} />
-          <p className="text-gray-600 mb-2">
-            {uploading ? 'Đang upload...' : 'Click để chọn ảnh hoặc kéo thả vào đây'}
+          <Upload className="mx-auto mb-2 text-gray-400" size={36} />
+          <p className="text-sm text-gray-600 mb-1">
+            {uploading ? 'Đang upload...' : 'Click để chọn ảnh'}
           </p>
-          <p className="text-sm text-gray-500">
-            PNG, JPG, GIF, WEBP (tối đa 5MB mỗi file)
+          <p className="text-xs text-gray-500">
+            PNG, JPG, GIF, WEBP (max 5MB)
           </p>
         </label>
       </div>
 
       {/* Image Gallery */}
       {images.length > 0 && (
-        <div className="mt-6">
-          <p className="text-sm text-gray-600 mb-3">
+        <div className="mt-4">
+          <p className="text-xs text-gray-600 mb-2">
             {images.length} ảnh
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
             {images.map((img, index) => (
               <div key={img.id || index} className="relative group">
-                <div className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                <div className="aspect-square rounded overflow-hidden border border-gray-200">
                   <img
                     src={img.url}
                     alt={img.altText}
@@ -63,20 +63,20 @@ const ImageUploadSection = ({
                 </div>
                 
                 {img.isThumbnail && (
-                  <span className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                    Thumbnail
+                  <span className="absolute top-1 left-1 bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded">
+                    Main
                   </span>
                 )}
                 
                 <button
                   type="button"
                   onClick={() => onRemoveImage(img, index)}
-                  className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                  className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
                 
-                <p className="mt-2 text-xs text-gray-600 truncate">
+                <p className="mt-1 text-[10px] text-gray-600 truncate">
                   {img.altText}
                 </p>
               </div>

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Pagination from "../../common/Pagination";
 import ProductRow from "./ProductRow";
 import { Settings } from "lucide-react";
@@ -16,7 +17,25 @@ const ProductTable = ({
   onSelectProduct,
   onPageChange,
 }) => {
-  if (loading) return <div className="text-center p-8">Đang tải...</div>;
+  // Skeleton loading component
+  const SkeletonRow = () => (
+    <tr className="animate-pulse">
+      <td className="px-4 py-3"><div className="w-4 h-4 bg-gray-200 rounded"></div></td>
+      <td className="px-4 py-3"><div className="flex items-center gap-3">
+        <div className="w-16 h-16 bg-gray-200 rounded"></div>
+        <div className="flex-1"><div className="h-4 bg-gray-200 rounded w-32 mb-2"></div><div className="h-3 bg-gray-200 rounded w-24"></div></div>
+      </div></td>
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-24"></div></td>
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-16"></div></td>
+      <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-12"></div></td>
+      <td className="px-4 py-3"><div className="flex justify-end gap-2">
+        <div className="w-8 h-8 bg-gray-200 rounded"></div>
+        <div className="w-8 h-8 bg-gray-200 rounded"></div>
+        <div className="w-8 h-8 bg-gray-200 rounded"></div>
+      </div></td>
+    </tr>
+  );
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -56,18 +75,25 @@ const ProductTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {products.map((product) => (
-              <ProductRow
-                key={product.id}
-                product={product}
-                isSelected={selectedProducts.includes(product.id)}
-                onSelect={() => onSelectProduct(product.id)}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onDuplicate={onDuplicate}
-                onManageVariants={onManageVariants}
-              />
-            ))}
+            {loading ? (
+              // Show skeleton rows while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <SkeletonRow key={index} />
+              ))
+            ) : (
+              products.map((product) => (
+                <ProductRow
+                  key={product.id}
+                  product={product}
+                  isSelected={selectedProducts.includes(product.id)}
+                  onSelect={() => onSelectProduct(product.id)}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onDuplicate={onDuplicate}
+                  onManageVariants={onManageVariants}
+                />
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -81,4 +107,4 @@ const ProductTable = ({
   );
 };
 
-export default ProductTable;
+export default memo(ProductTable);

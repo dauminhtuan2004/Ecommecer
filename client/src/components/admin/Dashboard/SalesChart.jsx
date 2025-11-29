@@ -1,4 +1,3 @@
-// src/components/admin/Dashboard/SalesChart.jsx
 import React from 'react';
 
 const SalesChart = () => (

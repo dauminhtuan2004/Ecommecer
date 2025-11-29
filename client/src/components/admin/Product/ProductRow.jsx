@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 // import { ChevronDown, ChevronUp } from "lucide-react";
 import ProductActions from "./ProductActions";
 import ProductDetails from "./ProductDetail";
@@ -194,9 +194,23 @@ const ProductRow = ({
       )}
 
       {/* Expanded Details */}
-      {expanded && <ProductDetails product={product} />}
+      {expanded && (
+        <ProductDetails 
+          product={product} 
+          onEditVariant={(variant) => {
+            // Open variant modal to edit specific variant
+            onManageVariants(product, variant);
+          }}
+          onDeleteVariant={(variant) => {
+            if (window.confirm(`Xóa variant "${variant.size} - ${variant.color}"?`)) {
+              // Handle delete
+              console.log('Delete variant:', variant);
+            }
+          }}
+        />
+      )}
     </>
   );
 };
 
-export default ProductRow;
+export default memo(ProductRow);

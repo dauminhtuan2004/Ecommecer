@@ -1,151 +1,250 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import VariantSection from './VariantSection';
+import Modal from '../../common/Modal';
 import Button from '../../common/Button';
 import toast from 'react-hot-toast';
-import productService from '../../../services/productService';
 
-const VariantManager = ({ product, onClose, onSave, onImagesUploaded }) => {
+const VariantManager = ({ product, onClose, onSave, onImagesUploaded, editingVariant }) => {
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
 
   useEffect(() => {
-    if (product?.variants) {
-      // Đảm bảo variants có đầy đủ field
-      setVariants(product.variants.map(v => ({
-        id: v.id,
-        size: v.size || '',
-        color: v.color || '',
-        price: v.price || product.basePrice || '',
-        stock: v.stock || '',
-        sku: v.sku || ''
-      })));
+    // Nếu đang edit variant, load data variant đó
+    // Nếu không, tạo form trống
+    if (editingVariant) {
+      setVariants([{
+        id: editingVariant.id,
+        size: editingVariant.size || '',
+        color: editingVariant.color || '',
+        price: editingVariant.price || product?.basePrice || '',
+        stock: editingVariant.stock || '',
+        sku: editingVariant.sku || ''
+      }]);
     } else {
       setVariants([{ size: '', color: '', price: product?.basePrice || '', stock: '', sku: '' }]);
     }
-  }, [product]);
+    setSelectedImages([]);
+  }, [product, editingVariant]);
 
-  // Xử lý variants (giống trong ProductForm)
-  const handleVariantChange = (index, field, value) => {
-    setVariants(prev => {
-      const newVariants = [...prev];
-      newVariants[index][field] = value;
-      return newVariants;
-    });
+  // Xử lý variants
+  const handleVariantChange = (field, value) => {
+    setVariants([{ ...variants[0], [field]: value }]);
   };
 
-  const handleAddVariant = () => {
-    setVariants(prev => [...prev, { 
-      size: '', 
-      color: '', 
-      price: product?.basePrice || '', 
-      stock: '', 
-      sku: '' 
-    }]);
-  };
-
-  const handleRemoveVariant = (index) => {
-    if (variants.length > 1) {
-      setVariants(prev => prev.filter((_, i) => i !== index));
-    } else {
-      toast.error('Phải có ít nhất 1 variant');
-    }
+  const handleImageSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedImages(files);
   };
 
   const handleSave = async () => {
-    // Validate variants: accept variants that have any meaningful field filled
-    const validVariants = variants.filter(v => {
-      const hasTextField = (v.size && String(v.size).trim()) || (v.color && String(v.color).trim()) || (v.sku && String(v.sku).trim());
-      const hasNumberField = (v.price !== undefined && v.price !== '') || (v.stock !== undefined && v.stock !== '');
-      return Boolean(hasTextField) || Boolean(hasNumberField);
-    });
-
-    if (validVariants.length === 0) {
-      toast.error('Cần ít nhất 1 variant có dữ liệu (kích thước, màu, sku, giá hoặc tồn kho)');
+    const variant = variants[0];
+    
+    // Validate
+    if (!variant.size?.trim() && !variant.color?.trim()) {
+      toast.error('Vui lòng nhập kích thước hoặc màu sắc');
       return;
     }
 
-    // Debug log so developer can inspect payload sent to server
-    console.log('Saving variants for product', product?.id, validVariants);
-
     setLoading(true);
     try {
-      await onSave(product.id, validVariants);
+      const existingVariants = product.variants || [];
+      let allVariants;
+      
+      if (editingVariant) {
+        // Cập nhật variant đang edit
+        allVariants = existingVariants.map(v => 
+          v.id === editingVariant.id 
+            ? { 
+                ...v,
+                size: variant.size?.trim() || '',
+                color: variant.color?.trim() || '',
+                price: variant.price || product?.basePrice || 0,
+                stock: variant.stock || 0,
+                sku: variant.sku?.trim() || ''
+              }
+            : v
+        );
+        toast.success('Đã cập nhật variant!');
+      } else {
+        // Thêm variant mới
+        const newVariant = {
+          size: variant.size?.trim() || '',
+          color: variant.color?.trim() || '',
+          price: variant.price || product?.basePrice || 0,
+          stock: variant.stock || 0,
+          sku: variant.sku?.trim() || ''
+        };
+        allVariants = [...existingVariants, newVariant];
+        toast.success('Đã thêm variant mới!');
+      }
+      
+      await onSave(product.id, allVariants);
+      
+      // Upload images nếu có
+      if (selectedImages.length > 0 && editingVariant?.id) {
+        await onImagesUploaded?.(editingVariant.id, selectedImages);
+      }
+      
+      onClose();
+    } catch (error) {
+      toast.error(error?.message || 'Không thể lưu variant');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUploadVariantImages = async (index, fileList) => {
-    const v = variants[index];
-    if (!v?.id) {
-      toast.error('Variant chưa được lưu. Vui lòng lưu variant trước khi upload ảnh.');
-      return;
-    }
-    const files = Array.from(fileList || []).filter(Boolean);
-    if (files.length === 0) return;
-
-    try {
-      toast.loading('Đang upload ảnh...');
-      await productService.uploadImages(product.id, files, { variantId: v.id });
-      toast.dismiss();
-      toast.success('Upload ảnh variant thành công');
-      if (typeof onImagesUploaded === 'function') onImagesUploaded();
-    } catch (err) {
-      console.error('Error uploading variant images', err);
-      toast.dismiss();
-      toast.error('Không thể upload ảnh cho variant');
-    }
-  };
+  const currentVariant = variants[0] || { size: '', color: '', price: '', stock: '', sku: '' };
 
   return (
-    <div className="fixed inset-0 bg-opacity-100 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="bg-gray-50 px-6 py-4 border-b flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Quản Lý Biến Thể</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {product?.name} - {product?.sku || 'No SKU'}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-          >
-            <X size={24} />
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={
+        <div>
+          <div className="text-xl font-semibold text-gray-900">Quản Lý Biến Thể</div>
+          <p className="text-sm text-gray-600 mt-1">
+            {product?.name} - {product?.sku || 'No SKU'}
+          </p>
+        </div>
+      }
+      size="2xl"
+    >
+      <div className="space-y-4">
+        {/* Info Note */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-sm text-blue-900">
+            💡 <strong>Lưu ý:</strong> {editingVariant ? 'Chỉnh sửa thông tin variant và upload ảnh riêng cho variant này.' : 'Sau khi thêm, variant sẽ hiển thị ở bảng sản phẩm bên dưới. Click mũi tên xuống ở hàng sản phẩm để xem tất cả variants.'}
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-          <VariantSection
-            variants={variants}
-            onVariantChange={handleVariantChange}
-            onAddVariant={handleAddVariant}
-            onRemoveVariant={handleRemoveVariant}
-            onUploadVariantImages={handleUploadVariantImages}
-            onDeleteVariantImage={async (imageId) => {
-              try {
-                await productService.deleteImage(imageId);
-                toast.success('Đã xóa ảnh');
-                if (typeof onImagesUploaded === 'function') onImagesUploaded();
-              } catch (err) {
-                console.error('Error deleting variant image', err);
-                toast.error('Không thể xóa ảnh');
-              }
-            }}
-            productImages={product?.images || []}
-            basePrice={product?.basePrice}
-          />
+        {/* Variant Form */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+          <h3 className="text-base font-semibold text-gray-900">
+            {editingVariant ? '✏️ Chỉnh Sửa Variant' : '➕ Thêm Biến Thể Mới'}
+          </h3>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {/* Size */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Kích Thước
+              </label>
+              <input
+                type="text"
+                value={currentVariant.size}
+                onChange={(e) => handleVariantChange('size', e.target.value)}
+                placeholder="S, M, L, XL..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+
+            {/* Color */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Màu Sắc
+              </label>
+              <input
+                type="text"
+                value={currentVariant.color}
+                onChange={(e) => handleVariantChange('color', e.target.value)}
+                placeholder="Đỏ, Xanh, Đen..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+
+            {/* Price */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Giá (₫)
+              </label>
+              <input
+                type="number"
+                value={currentVariant.price}
+                onChange={(e) => handleVariantChange('price', e.target.value)}
+                placeholder={product?.basePrice || '0'}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+
+            {/* Stock */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tồn Kho
+              </label>
+              <input
+                type="number"
+                value={currentVariant.stock}
+                onChange={(e) => handleVariantChange('stock', e.target.value)}
+                placeholder="0"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+
+            {/* SKU */}
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                SKU (Mã SP)
+              </label>
+              <input
+                type="text"
+                value={currentVariant.sku}
+                onChange={(e) => handleVariantChange('sku', e.target.value)}
+                placeholder="VD: PRD-S-RED-001"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+
+            {/* Image Upload - Only show when editing existing variant */}
+            {editingVariant?.id && (
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ảnh Variant
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                {selectedImages.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Đã chọn {selectedImages.length} ảnh
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Current Variants Summary */}
+          {!editingVariant && product?.variants && product.variants.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <p className="text-xs text-gray-500 mb-2">
+                <strong>Variants hiện tại:</strong> {product.variants.length} variants
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {product.variants.slice(0, 5).map((v, idx) => (
+                  <span key={idx} className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                    {v.size} • {v.color}
+                  </span>
+                ))}
+                {product.variants.length > 5 && (
+                  <span className="inline-flex items-center px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded font-medium">
+                    +{product.variants.length - 5} khác
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t">
           <Button
             variant="secondary"
             onClick={onClose}
             disabled={loading}
+            className="px-5 py-2"
           >
             Hủy
           </Button>
@@ -153,12 +252,13 @@ const VariantManager = ({ product, onClose, onSave, onImagesUploaded }) => {
             variant="primary"
             onClick={handleSave}
             loading={loading}
+            className="px-5 py-2"
           >
-            Lưu Biến Thể
+            {editingVariant ? '💾 Lưu Thay Đổi' : '➕ Thêm Variant'}
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
