@@ -1,12 +1,11 @@
 // src/pages/Auth/LoginPage.jsx
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth'; // Hook handleLogin
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { Mail, Lock, ArrowRight, Chrome } from 'lucide-react';
+import toast from 'react-hot-toast';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import Loading from '../../components/common/Loading';
-import AuthLayout from '../../components/auth/AuthLayout';
-import toast from 'react-hot-toast';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -52,58 +51,157 @@ const LoginPage = () => {
   };
 
   return (
-    <AuthLayout title="Sign in" subtitle="Đăng nhập vào tài khoản của bạn">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <Input
-          type="email"
-          name="email"
-          label="Email"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-          required
-        />
-        <Input
-          type="password"
-          name="password"
-          label="Password"
-          value={formData.password}
-          onChange={handleChange}
-          error={errors.password}
-          required
-        />
+    <div className="min-h-screen flex overflow-hidden bg-gray-100">
+      {/* Left Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 bg-white relative animate-slideInLeft lg:shadow-[8px_0_24px_-8px_rgba(0,0,0,0.12)] z-10">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900">
+              Welcome Back
+            </h1>
+            <p className="text-gray-600 mt-2">Đăng nhập để tiếp tục mua sắm</p>
+          </div>
 
-        <div className="flex items-center justify-between">
-          <label className="flex items-center space-x-2 text-sm">
-            <input type="checkbox" className="h-4 w-4" />
-            <span>Remember me</span>
-          </label>
-          <Link to="/forgot-password" className="text-indigo-600 hover:text-indigo-500 text-sm">
-            Forgot password?
-          </Link>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              icon={Mail}
+              placeholder="your@email.com"
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              icon={Lock}
+              placeholder="••••••••"
+              required
+            />
+
+            {/* Remember & Forgot */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 text-gray-900 rounded focus:ring-2 focus:ring-gray-900" />
+                <span className="text-sm text-gray-600">Remember me</span>
+              </label>
+              <Link to="/forgot-password" className="text-sm text-gray-900 hover:text-gray-700 font-medium">
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="dark"
+              fullWidth
+              size="lg"
+              icon={!isLoading && ArrowRight}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google Login */}
+            <Button
+              type="button"
+              onClick={handleGoogleLogin}
+              variant="outline"
+              fullWidth
+              size="lg"
+              icon={Chrome}
+            >
+              Sign in with Google
+            </Button>
+
+            {/* Sign up link */}
+            <p className="text-center text-sm text-gray-600 mt-6">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-gray-900 hover:text-gray-700 font-semibold">
+                Sign up
+              </Link>
+            </p>
+          </form>
         </div>
+      </div>
 
-        <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
-          {isLoading ? <Loading size="sm" text="" /> : 'Sign in'}
-        </Button>
+      {/* Right Side - Image */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden animate-slideInRight">
+        <img 
+          src="/bannerlogin.png" 
+          alt="Login Banner" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
 
-        <Button
-          onClick={handleGoogleLogin}
-          variant="outline"
-          fullWidth
-          className="mt-3 flex items-center justify-center space-x-2"
-        >
-          <span>Sign in with Google</span>
-        </Button>
-
-        <div className="text-center text-sm mt-4">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-600 hover:text-indigo-500 font-medium">
-            Sign up
-          </Link>
-        </div>
-      </form>
-    </AuthLayout>
+      {/* Add animations in style tag */}
+      <style>{`
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slideInLeft {
+          animation: slideInLeft 0.6s ease-out;
+        }
+        
+        .animate-slideInRight {
+          animation: slideInRight 0.6s ease-out;
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+      `}</style>
+    </div>
   );
 };
 

@@ -105,29 +105,7 @@ export class AuthController {
     @Query('email') email: string,
     @Res() res: Response,
   ) {
-    // 🔒 FIX: Use proper HTML template with CSRF protection
-    res.send(`
-    <html>
-      <head>
-        <title>Reset Password</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
-          form { display: flex; flex-direction: column; gap: 10px; }
-          input, button { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-          button { background: #007bff; color: white; border: none; cursor: pointer; }
-        </style>
-      </head>
-      <body>
-        <h2>Reset Password</h2>
-        <form action="/api/auth/reset-password" method="POST">
-          <input type="hidden" name="token" value="${token}" />
-          <input type="hidden" name="email" value="${email}" />
-          <input type="password" name="password" placeholder="New password" required minlength="6" />
-          <button type="submit">Reset Password</button>
-        </form>
-      </body>
-    </html>
-    `);
+    
   }
 
   @Post('reset-password')
@@ -153,7 +131,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback' })
   @ApiResponse({ status: 200, description: 'Google login successful' })
-  googleAuthRedirect(@Req() req: any, @Res() res: Response) {
+  async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
     const user = req.user;
     
     // 🔒 FIX: Minimal token payload for Google auth
@@ -166,8 +144,16 @@ export class AuthController {
     // 🔒 FIX: Set httpOnly cookie for Google auth too
     this.authService.setAuthCookie(res, token);
     
-    // Redirect to frontend with success message
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/auth/success`);
+    // Encode user data as base64 for URL
+    const userDataString = JSON.stringify({
+      id: user.userId,
+      email: user.email,
+      role: user.role
+    });
+    const encodedUser = Buffer.from(userDataString).toString('base64');
+    
+    // Redirect to frontend homepage with token and user data in URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/?google_token=${token}&user_data=${encodedUser}`);
   }
 }

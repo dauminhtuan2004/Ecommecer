@@ -2,16 +2,16 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import  authService  from '../../services/authService';
+import authService from '../../services/authService';
+import { Mail, Lock, User, ArrowRight, Chrome } from 'lucide-react';
+import toast from 'react-hot-toast';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
-import Loading from '../../components/common/Loading';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '', name: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -42,67 +42,172 @@ const RegisterPage = () => {
       const response = await authService.register(formData);
       if (response.access_token) {
         login(response.access_token, response.user);
+        toast.success('Đăng ký thành công!');
         navigate('/');
       } else {
-        setMessage('Registration failed. Please try again.');
+        toast.error('Registration failed. Please try again.');
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Registration failed');
+      toast.error(error.response?.data?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:5000/api/auth/google';
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
-        </div>
-        {message && <Alert type="error" message={message} onClose={() => setMessage('')} />}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            name="name"
-            label="Full name"
-            value={formData.name}
-            onChange={handleChange}
-            error={errors.name}
-            required
-          />
-          <Input
-            type="email"
-            name="email"
-            label="Email address"
-            value={formData.email}
-            onChange={handleChange}
-            error={errors.email}
-            required
-          />
-          <Input
-            type="password"
-            name="password"
-            label="Password"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-            required
-          />
+    <div className="min-h-screen flex overflow-hidden bg-gray-100">
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden animate-slideInLeft">
+        <img 
+          src="/register.png" 
+          alt="Register Banner" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
+      {/* Right Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 bg-white relative animate-slideInRight lg:shadow-[-8px_0_24px_-8px_rgba(0,0,0,0.12)] z-10">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900">
+              Create Account
+            </h1>
+            <p className="text-gray-600 mt-2">Đăng ký để bắt đầu mua sắm</p>
+          </div>
 
-          <Button type="submit" disabled={isLoading} fullWidth className="bg-indigo-600 hover:bg-indigo-700">
-            {isLoading ? <Loading size="sm" text="" /> : 'Sign up'}
-          </Button>
-        </form>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Full Name"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              icon={User}
+              placeholder="John Doe"
+              required
+            />
 
-        <div className="text-center">
-          <span className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign in
-            </Link>
-          </span>
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              icon={Mail}
+              placeholder="your@email.com"
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              icon={Lock}
+              placeholder="••••••••"
+              required
+            />
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="dark"
+              fullWidth
+              size="lg"
+              icon={!isLoading && ArrowRight}
+            >
+              {isLoading ? 'Creating account...' : 'Sign up'}
+            </Button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Or sign up with</span>
+              </div>
+            </div>
+
+            {/* Google Login */}
+            <Button
+              type="button"
+              onClick={handleGoogleLogin}
+              variant="outline"
+              fullWidth
+              size="lg"
+              icon={Chrome}
+            >
+              Sign up with Google
+            </Button>
+
+            {/* Sign in link */}
+            <p className="text-center text-sm text-gray-600 mt-6">
+              Already have an account?{' '}
+              <Link to="/login" className="text-gray-900 hover:text-gray-700 font-semibold">
+                Sign in
+              </Link>
+            </p>
+          </form>
         </div>
       </div>
+
+      {/* Add animations in style tag */}
+      <style>{`
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slideInLeft {
+          animation: slideInLeft 0.6s ease-out;
+        }
+        
+        .animate-slideInRight {
+          animation: slideInRight 0.6s ease-out;
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+      `}</style>
     </div>
   );
 };

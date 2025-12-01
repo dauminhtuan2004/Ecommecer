@@ -20,8 +20,14 @@ export class ResetPasswordDto {
   })
   @IsEmail()
   email: string;
+
+  @ApiProperty({ 
+    example: 'abc123def456...', 
+    description: 'Token reset password từ email', 
+    required: true 
+  })
+  @IsString()
   token: string;
-  
 
   @ApiProperty({ 
     example: 'newpassword123', 

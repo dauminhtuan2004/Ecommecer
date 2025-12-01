@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { MailerModule } from '@nestjs-modules/mailer';  // Thêm cho email
+import { MailerModule } from '@nestjs-modules/mailer'; 
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';  // Thêm Google
+import { GoogleStrategy } from './strategies/google.strategy'; 
 import { UserModule } from '../user/user.module';
 
 @Module({
@@ -16,7 +16,7 @@ import { UserModule } from '../user/user.module';
       secret: process.env.JWT_SECRET || 'supersecret',
       signOptions: { expiresIn: '24h' },
     }),
-    MailerModule.forRootAsync({  
+    MailerModule.forRootAsync({
       useFactory: () => ({
         transport: {
           service: process.env.EMAIL_SERVICE || 'gmail',

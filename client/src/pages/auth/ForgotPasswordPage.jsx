@@ -2,11 +2,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, ArrowLeft } from "lucide-react";
-import Input from "../../components/common/Input";       // ✅ default import
-import Button from "../../components/common/Button";     // ✅ default import
-import AuthLayout from "../../components/auth/AuthLayout";
 import authService from "../../services/authService";
 import toast from "react-hot-toast";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
 
 const ForgotPasswordPage = () => {
   const [loading, setLoading] = useState(false);
@@ -46,98 +45,166 @@ const ForgotPasswordPage = () => {
 
   if (sent) {
     return (
-      <AuthLayout
-        title="Kiểm tra email"
-        subtitle="Chúng tôi đã gửi link khôi phục mật khẩu"
-      >
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-            <Mail className="text-green-600" size={32} />
+      <div className="min-h-screen flex overflow-hidden bg-gray-100">
+        {/* Left Side - Success Message */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 bg-white relative animate-slideInLeft lg:shadow-[8px_0_24px_-8px_rgba(0,0,0,0.12)] z-10">
+          <div className="w-full max-w-md">
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <Mail className="text-gray-900" size={40} />
+              </div>
+
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Kiểm tra email</h1>
+                <p className="text-gray-600">
+                  Chúng tôi đã gửi email khôi phục mật khẩu đến
+                </p>
+              </div>
+
+              <p className="font-semibold text-gray-900 text-lg">{email}</p>
+
+              <p className="text-sm text-gray-500">
+                Vui lòng kiểm tra hộp thư và làm theo hướng dẫn. Link sẽ hết hạn sau 1 giờ.
+              </p>
+
+              <div className="pt-4 space-y-4">
+                <Button
+                  onClick={() => setSent(false)}
+                  variant="outline"
+                  fullWidth
+                  size="lg"
+                >
+                  Không nhận được email? Gửi lại
+                </Button>
+
+                <Link
+                  to="/login"
+                  className="inline-flex items-center space-x-2 text-gray-900 hover:text-gray-700"
+                >
+                  <ArrowLeft size={16} />
+                  <span>Quay lại đăng nhập</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Image */}
+        <div className="hidden lg:block lg:w-1/2 relative overflow-hidden animate-slideInRight">
+          <img 
+            src="/bannerlogin.png" 
+            alt="Forgot Password" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Animations */}
+        <style>{`
+          @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+          @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+          .animate-slideInLeft { animation: slideInLeft 0.6s ease-out; }
+          .animate-slideInRight { animation: slideInRight 0.6s ease-out; }
+        `}</style>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex overflow-hidden bg-gray-100">
+      {/* Left Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 bg-white relative animate-slideInLeft lg:shadow-[8px_0_24px_-8px_rgba(0,0,0,0.12)] z-10">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900">
+              Quên mật khẩu
+            </h1>
+            <p className="text-gray-600 mt-2">Nhập email để khôi phục mật khẩu</p>
           </div>
 
-          <p className="text-gray-600">
-            Chúng tôi đã gửi email khôi phục mật khẩu đến
-          </p>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
-          <p className="font-semibold text-gray-900">{email}</p>
+            <div className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 rounded-lg text-sm">
+              <p>
+                Nhập email đã đăng ký. Chúng tôi sẽ gửi link để đặt lại mật khẩu.
+              </p>
+            </div>
 
-          <p className="text-sm text-gray-500">
-            Vui lòng kiểm tra hộp thư và làm theo hướng dẫn. Link sẽ hết hạn sau
-            1 giờ.
-          </p>
+            {/* Email Input */}
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              icon={Mail}
+              placeholder="your@email.com"
+              required
+            />
 
-          <div className="pt-4 space-y-3">
+            {/* Submit Button */}
             <Button
-              onClick={() => setSent(false)}
-              variant="outline"
+              type="submit"
+              disabled={loading}
+              variant="dark"
               fullWidth
+              size="lg"
             >
-              Không nhận được email? Gửi lại
+              {loading ? 'Đang gửi...' : 'Gửi link khôi phục'}
             </Button>
 
-            <div>
+            {/* Back to Login */}
+            <div className="text-center">
               <Link
                 to="/login"
-                className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                className="inline-flex items-center space-x-2 text-gray-900 hover:text-gray-700 text-sm font-medium"
               >
                 <ArrowLeft size={16} />
                 <span>Quay lại đăng nhập</span>
               </Link>
             </div>
-          </div>
+          </form>
         </div>
-      </AuthLayout>
-    );
-  }
+      </div>
 
-  return (
-    <AuthLayout
-      title="Quên mật khẩu"
-      subtitle="Nhập email để khôi phục mật khẩu"
-    >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-          <p>
-            Nhập email đã đăng ký. Chúng tôi sẽ gửi link để đặt lại mật khẩu.
-          </p>
-        </div>
-
-        <Input
-          label="Email"
-          type="email"
-          name="email"
-          placeholder="your@email.com"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setError("");
-          }}
-          error={error}
-          icon={Mail}
-          required
+      {/* Right Side - Image */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden animate-slideInRight">
+        <img 
+          src="/bannerlogin.png" 
+          alt="Forgot Password" 
+          className="absolute inset-0 w-full h-full object-cover"
         />
+      </div>
 
-        <Button type="submit" variant="primary" fullWidth loading={loading}>
-          Gửi link khôi phục
-        </Button>
-
-        <div className="text-center">
-          <Link
-            to="/login"
-            className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 text-sm"
-          >
-            <ArrowLeft size={16} />
-            <span>Quay lại đăng nhập</span>
-          </Link>
-        </div>
-      </form>
-    </AuthLayout>
+      {/* Animations */}
+      <style>{`
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(-50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-slideInLeft { animation: slideInLeft 0.6s ease-out; }
+        .animate-slideInRight { animation: slideInRight 0.6s ease-out; }
+      `}</style>
+    </div>
   );
 };
 

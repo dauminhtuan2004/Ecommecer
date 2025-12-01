@@ -24,7 +24,8 @@ const AdminUsersPage = lazy(() => import("../pages/Admin/User/UserManagement"));
 const AdminOrdersPage = lazy(() => import("../pages/Admin/Order/OrderManagement"));
 const AdminPaymentsPage = lazy(() => import("../pages/Admin/Payment/PaymentManagement"));
 const AdminDiscountsPage = lazy(() => import("../pages/Admin/Discount/DiscountManagement"));
-const ProfilePage = lazy(() => import("../pages/Admin/Profile/ProfilePage"));
+const AdminProfilePage = lazy(() => import("../pages/Admin/Profile/ProfilePage"));
+const CustomerProfilePage = lazy(() => import("../pages/Customer/Profile/ProfilePage"));
 
 const AppRoutes = () => {
   return (
@@ -38,19 +39,11 @@ const AppRoutes = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected Customer Routes */}
-        <Route
-          path="/account"
-          element={
-            // <ProtectedRoute>
-            <div className="container mx-auto px-4 py-8">
-              <h1 className="text-3xl font-bold">Account Page (Customer)</h1>
-            </div>
-            // {/* </ProtectedRoute> */}
-          }
-        />
+        <Route path="/profile" element={<CustomerProfilePage />} />
+        <Route path="/account" element={<CustomerProfilePage />} />
         <Route
           path="/"
           element={
@@ -143,7 +136,7 @@ const AppRoutes = () => {
           element={
             // <AdminRoute>
             <AdminLayout>
-              <ProfilePage />
+              <AdminProfilePage />
             </AdminLayout>
             // </AdminRoute>
           }

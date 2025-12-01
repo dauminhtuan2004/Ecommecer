@@ -159,20 +159,7 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-            <div className="text-center md:text-right">
-              <p className="text-sm font-semibold mb-2">Đối tác vận chuyển:</p>
-              <div className="flex gap-2 flex-wrap justify-center md:justify-end">
-                <div className="px-3 py-1 bg-gray-800 rounded text-xs font-semibold">
-                  Giao Hàng Nhanh
-                </div>
-                <div className="px-3 py-1 bg-gray-800 rounded text-xs font-semibold">
-                  J&T Express
-                </div>
-                <div className="px-3 py-1 bg-gray-800 rounded text-xs font-semibold">
-                  GHTK
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -185,7 +172,7 @@ const Footer = () => {
             <p>
               Designed with ❤️ by{' '}
               <a href="#" className="text-blue-400 hover:text-blue-300">
-                Your Team
+              Minh Tuấn
               </a>
             </p>
           </div>

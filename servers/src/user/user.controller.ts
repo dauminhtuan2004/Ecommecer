@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Query, UsePipes, ValidationPipe, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -27,6 +27,30 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'List of users' })
   findAll(@Query() query: QueryUserDto) {
     return this.userService.findAll(query);
+  }
+
+  @Get('profile')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'User profile' })
+  async getProfile(@Req() req: any) {
+    const userId = req.user.userId;
+    const user = await this.userService.findOne(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const { password, ...userWithoutPassword } = user;
+    return { user: userWithoutPassword };
+  }
+
+  @Put('profile')
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  async updateProfile(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
+    const userId = req.user.userId;
+    const updatedUser = await this.userService.update(userId, updateUserDto);
+    const { password, ...userWithoutPassword } = updatedUser;
+    return { message: 'Profile updated successfully', user: userWithoutPassword };
   }
 
   @Get(':id')

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "../../../components/layouts/Layout";
 import HeroBanner from "../../../components/customer/home/HeroBanner";
 import FeaturedCategories from "../../../components/customer/home/FeaturedCategories";
@@ -5,9 +7,39 @@ import FeaturedProducts from "../../../components/customer/home/FeaturedProducts
 import PromoBanner from "../../../components/customer/home/PromoBanner";
 import Features from "../../../components/customer/home/Features";
 import { useHomeData } from "../../../hooks/useHomeData";
+import toast from "react-hot-toast";
 
 const HomePage = () => {
   const { data: homeData, loading, error } = useHomeData();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const googleToken = searchParams.get('google_token');
+    const userData = searchParams.get('user_data');
+    
+    if (googleToken) {
+      // Store token
+      localStorage.setItem('token', googleToken);
+      
+      // Decode and store user data
+      if (userData) {
+        try {
+          const decodedUser = JSON.parse(atob(userData));
+          localStorage.setItem('user', JSON.stringify(decodedUser));
+        } catch (error) {
+          console.error('Failed to decode user data:', error);
+        }
+      }
+      
+      toast.success('Đăng nhập Google thành công!');
+      
+      // Remove token from URL and reload
+      navigate('/', { replace: true });
+      window.location.reload();
+    }
+  }, [searchParams, navigate]);
 
   if (loading) {
     return (

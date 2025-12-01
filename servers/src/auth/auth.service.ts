@@ -50,11 +50,11 @@ export class AuthService {
 
   async login(tokenPayload: any, userInfo?: any) {
     const user = userInfo || (await this.userService.findOne(tokenPayload.sub));
-    
-    const payload = { 
+
+    const payload = {
       sub: tokenPayload.sub,
       email: user.email,
-      role: user.role
+      role: user.role,
     };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -90,7 +90,7 @@ export class AuthService {
 
     await this.userService.updateResetToken(user.id, resetData);
 
-    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const resetUrl = `${baseUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
     await this.mailerService.sendMail({

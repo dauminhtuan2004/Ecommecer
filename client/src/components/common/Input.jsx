@@ -16,7 +16,7 @@ const Input = ({
 
   const errorClasses = error 
     ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
-    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200 hover:border-gray-400';
+    : 'border-gray-300 focus:border-gray-900 focus:ring-gray-900 hover:border-gray-400';
 
   const classes = `${baseClasses} ${errorClasses} ${Icon ? 'pl-10' : ''} ${className}`;
 

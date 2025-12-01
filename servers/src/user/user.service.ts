@@ -41,10 +41,17 @@ export class UserService {
   }
 
   async update(id: number, data: UpdateUserDto): Promise<User> {
-    const updateData: Prisma.UserUpdateInput = { name: data.name };
+    const updateData: Prisma.UserUpdateInput = {};
+    
+    if (data.name) updateData.name = data.name;
+    if (data.email) updateData.email = data.email;
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
+    
+    // Note: phone and address are stored in Address model, not User model
+    // To update phone/address, use the address endpoints
+    
     return this.prisma.user.update({ where: { id }, data: updateData });
   }
 

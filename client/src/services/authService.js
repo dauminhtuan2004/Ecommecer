@@ -36,10 +36,7 @@ const authService = {
   isAuthenticated: () => !!localStorage.getItem("token"),
 
   updateProfile: async (userData) => {
-    const token = authService.getToken();
-    const response = await axiosInstance.put("/user/profile", userData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axiosInstance.put("/users/profile", userData);
     if (response.data?.user) {
       localStorage.setItem("user", JSON.stringify(response.data.user));
     }
@@ -54,6 +51,25 @@ const authService = {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     return response.data;
+  },
+
+  forgotPassword: async (email) => {
+    const response = await axiosInstance.post("/auth/forgot-password", { email });
+    return response.data;
+  },
+
+  resetPassword: async (token, email, password) => {
+    const response = await axiosInstance.post("/auth/reset-password", {
+      token,
+      email,
+      password,
+    });
+    return response.data;
+  },
+
+  googleLogin: () => {
+    // Redirect to backend Google OAuth endpoint - API URL already correct
+    window.location.href = `http://localhost:5000/api/auth/google`;
   },
 };
 
