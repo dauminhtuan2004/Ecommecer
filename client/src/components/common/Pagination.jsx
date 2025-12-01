@@ -94,7 +94,7 @@ const Pagination = memo(({
                 disabled={page === currentPage}
                 className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                   page === currentPage
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-gray-900 text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >

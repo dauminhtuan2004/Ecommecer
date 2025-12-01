@@ -8,7 +8,7 @@ const FeaturedCategories = ({ categories = [] }) => {
       image: 'https://images.unsplash.com/photo-1490114538077-0a7f8cb49891',
       productCount: 150,
       tag: 'Hot',
-      color: 'from-blue-500 to-indigo-600'
+      color: 'from-gray-700 to-gray-900'
     },
     {
       id: 2,
@@ -16,7 +16,7 @@ const FeaturedCategories = ({ categories = [] }) => {
       image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b',
       productCount: 280,
       tag: 'New',
-      color: 'from-pink-500 to-rose-600'
+      color: 'from-gray-800 to-gray-950'
     },
     {
       id: 3,
@@ -24,7 +24,7 @@ const FeaturedCategories = ({ categories = [] }) => {
       image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f',
       productCount: 95,
       tag: 'Sale',
-      color: 'from-amber-500 to-orange-600'
+      color: 'from-gray-700 to-gray-900'
     },
     {
       id: 4,
@@ -32,19 +32,19 @@ const FeaturedCategories = ({ categories = [] }) => {
       image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772',
       productCount: 120,
       tag: 'Trend',
-      color: 'from-purple-500 to-violet-600'
+      color: 'from-gray-800 to-gray-950'
     }
   ];
 
   const gradientColors = [
-    'from-blue-500 to-indigo-600',
-    'from-pink-500 to-rose-600', 
-    'from-amber-500 to-orange-600',
-    'from-purple-500 to-violet-600',
-    'from-green-500 to-emerald-600',
-    'from-red-500 to-rose-600',
-    'from-cyan-500 to-blue-600',
-    'from-orange-500 to-red-600'
+    'from-gray-700 to-gray-900',
+    'from-gray-800 to-gray-950', 
+    'from-gray-700 to-gray-900',
+    'from-gray-800 to-gray-950',
+    'from-gray-700 to-gray-900',
+    'from-gray-800 to-gray-950',
+    'from-gray-700 to-gray-900',
+    'from-gray-800 to-gray-950'
   ];
 
   const tags = ['Hot', 'New', 'Sale', 'Trend'];

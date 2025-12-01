@@ -124,20 +124,6 @@ const ResetPasswordPage = () => {
             className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
-
-        {/* Animations */}
-        <style>{`
-          @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-50px); }
-            to { opacity: 1; transform: translateX(0); }
-          }
-          @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(50px); }
-            to { opacity: 1; transform: translateX(0); }
-          }
-          .animate-slideInLeft { animation: slideInLeft 0.6s ease-out; }
-          .animate-slideInRight { animation: slideInRight 0.6s ease-out; }
-        `}</style>
       </div>
     );
   }
@@ -234,20 +220,6 @@ const ResetPasswordPage = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
       </div>
-
-      {/* Animations */}
-      <style>{`
-        @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-50px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(50px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        .animate-slideInLeft { animation: slideInLeft 0.6s ease-out; }
-        .animate-slideInRight { animation: slideInRight 0.6s ease-out; }
-      `}</style>
     </div>
   );
 };

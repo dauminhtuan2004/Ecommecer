@@ -4,27 +4,27 @@ import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 const Alert = ({ type = 'info', message, onClose }) => {
   const types = {
     success: {
-      bg: 'bg-green-50',
-      border: 'border-green-200',
-      text: 'text-green-800',
+      bg: 'bg-gray-100',
+      border: 'border-gray-300',
+      text: 'text-gray-900',
       icon: CheckCircle,
     },
     error: {
-      bg: 'bg-red-50',
-      border: 'border-red-200',
-      text: 'text-red-800',
+      bg: 'bg-gray-900',
+      border: 'border-gray-900',
+      text: 'text-white',
       icon: XCircle,
     },
     warning: {
-      bg: 'bg-yellow-50',
-      border: 'border-yellow-200',
-      text: 'text-yellow-800',
+      bg: 'bg-gray-200',
+      border: 'border-gray-400',
+      text: 'text-gray-900',
       icon: AlertCircle,
     },
     info: {
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
-      text: 'text-blue-800',
+      bg: 'bg-gray-100',
+      border: 'border-gray-300',
+      text: 'text-gray-900',
       icon: Info,
     },
   };

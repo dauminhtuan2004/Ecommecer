@@ -139,15 +139,7 @@ const FeaturedProducts = ({ products = [] }) => {
                 {/* Badge */}
                 {product.badge && (
                   <div className="absolute top-3 left-3 z-10">
-                    <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${
-                      product.badge.includes('Sale') 
-                        ? 'bg-red-500 text-white'
-                        : product.badge === 'Hot' || product.badge === 'Trending'
-                        ? 'bg-orange-500 text-white'
-                        : product.badge === 'New'
-                        ? 'bg-green-500 text-white'
-                        : 'bg-blue-500 text-white'
-                    }`}>
+                    <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-gray-900 text-white">
                       {product.badge}
                     </span>
                   </div>
@@ -155,10 +147,10 @@ const FeaturedProducts = ({ products = [] }) => {
 
                 {/* Quick Actions */}
                 <div className="absolute top-3 right-3 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-red-50 hover:text-red-500 transition-colors">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-100 hover:text-gray-900 transition-colors">
                     <Heart size={18} />
                   </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-blue-50 hover:text-blue-500 transition-colors">
+                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-100 hover:text-gray-900 transition-colors">
                     <Eye size={18} />
                   </button>
                 </div>

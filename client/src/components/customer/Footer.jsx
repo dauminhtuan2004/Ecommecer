@@ -21,8 +21,8 @@ const Footer = () => {
           {/* About */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <ShoppingCart className="text-white" size={20} />
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <ShoppingCart className="text-gray-900" size={20} />
               </div>
               <span className="text-2xl font-bold text-white">SHOP</span>
             </div>
@@ -31,16 +31,16 @@ const Footer = () => {
               Chất lượng - Uy tín - Giá tốt.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-full flex items-center justify-center transition-colors">
+              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-white hover:text-gray-900 rounded-full flex items-center justify-center transition-colors">
                 <Facebook size={18} />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-pink-600 rounded-full flex items-center justify-center transition-colors">
+              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-white hover:text-gray-900 rounded-full flex items-center justify-center transition-colors">
                 <Instagram size={18} />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-400 rounded-full flex items-center justify-center transition-colors">
+              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-white hover:text-gray-900 rounded-full flex items-center justify-center transition-colors">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors">
+              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-white hover:text-gray-900 rounded-full flex items-center justify-center transition-colors">
                 <Youtube size={18} />
               </a>
             </div>

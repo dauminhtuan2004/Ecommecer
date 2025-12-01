@@ -14,7 +14,7 @@ const PromoBanner = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
             <div className="absolute inset-0 p-8 lg:p-12 flex flex-col justify-center">
-              <span className="inline-block w-fit px-4 py-1 bg-yellow-400 text-gray-900 text-sm font-bold rounded-full mb-4">
+              <span className="inline-block w-fit px-4 py-1 bg-white text-gray-900 text-sm font-bold rounded-full mb-4">
                 NEW COLLECTION
               </span>
               <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
@@ -38,7 +38,7 @@ const PromoBanner = () => {
                 alt="Accessories"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-transparent" />
               <div className="absolute inset-0 p-6 lg:p-8 flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-white mb-2">
                   Phụ Kiện Cao Cấp
@@ -59,7 +59,7 @@ const PromoBanner = () => {
                 alt="Shoes"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-transparent" />
               <div className="absolute inset-0 p-6 lg:p-8 flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-white mb-2">
                   Giày Thể Thao

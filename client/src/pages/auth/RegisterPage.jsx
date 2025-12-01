@@ -160,54 +160,6 @@ const RegisterPage = () => {
           </form>
         </div>
       </div>
-
-      {/* Add animations in style tag */}
-      <style>{`
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-slideInLeft {
-          animation: slideInLeft 0.6s ease-out;
-        }
-        
-        .animate-slideInRight {
-          animation: slideInRight 0.6s ease-out;
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out 0.3s both;
-        }
-      `}</style>
     </div>
   );
 };

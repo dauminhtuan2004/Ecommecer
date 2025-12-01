@@ -14,14 +14,14 @@ const DeleteConfirmModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="space-y-4">
-        <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
-          <AlertTriangle className="text-red-600 flex-shrink-0" size={24} />
+        <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-lg border-2 border-gray-900">
+          <AlertTriangle className="text-gray-900 flex-shrink-0" size={24} />
           <div>
-            <p className="text-sm text-red-800 font-medium">
+            <p className="text-sm text-gray-900 font-medium">
               {message || 'Hành động này không thể hoàn tác!'}
             </p>
             {itemName && (
-              <p className="text-sm text-red-700 mt-1">
+              <p className="text-sm text-gray-700 mt-1">
                 Bạn có chắc muốn xóa <span className="font-semibold">"{itemName}"</span>?
               </p>
             )}

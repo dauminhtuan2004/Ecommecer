@@ -75,8 +75,10 @@ const HomePage = () => {
 
   return (
     <Layout>
-      {/* Hero Banner - Full width, outside container */}
-      <HeroBanner slides={homeData.banners} />
+      {/* Hero Banner - Full width, no padding */}
+      <div className="-mt-[104px]">
+        <HeroBanner slides={homeData.banners} />
+      </div>
 
       {/* Features */}
       <Features />

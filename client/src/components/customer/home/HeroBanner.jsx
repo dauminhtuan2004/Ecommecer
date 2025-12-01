@@ -8,43 +8,23 @@ const HeroBanner = ({ slides = [] }) => {
   const [videoMuted, setVideoMuted] = useState(true);
 
   // Default slides nếu không có data
-  const defaultSlides = [
-    {
-      type: 'image',
-      url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
-      title: 'Bộ Sưu Tập Mùa Hè 2024',
-      subtitle: 'Xu hướng thời trang mới nhất',
-      cta: 'Khám Phá Ngay',
-      ctaLink: '/products'
-    },
-    {
-      type: 'video',
-      url: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-in-a-fashion-shop-6329-large.mp4',
-      title: 'Thời Trang Năng Động',
-      subtitle: 'Phong cách riêng của bạn',
-      cta: 'Xem Ngay',
-      ctaLink: '/products'
-    },
-    {
-      type: 'image',
-      url: 'https://images.unsplash.com/photo-1445205170230-053b83016050',
-      title: 'Sale Cuối Năm',
-      subtitle: 'Giảm giá lên đến 50%',
-      cta: 'Mua Ngay',
-      ctaLink: '/products'
-    }
-  ];
+ 
 
   // Map banners từ API với format chuẩn
   const bannerSlides = slides.length > 0 
-    ? slides.map(banner => ({
-        type: banner.video ? 'video' : 'image',
-        url: banner.video || banner.image,
-        title: banner.title,
-        subtitle: banner.subtitle || '',
-        cta: banner.buttonText || 'Xem Ngay',
-        ctaLink: banner.link || '/products'
-      }))
+    ? slides.map(banner => {
+        // Determine if it's a video based on video field being a real video URL
+        const isVideo = banner.video && banner.video !== 'https://example.com/video.mp4' && banner.video.includes('.mp4');
+        
+        return {
+          type: isVideo ? 'video' : 'image',
+          url: isVideo ? banner.video : banner.image,
+          title: banner.title || 'Banner',
+          subtitle: banner.subtitle || '',
+          cta: banner.buttonText || 'Xem Ngay',
+          ctaLink: banner.link || '/products'
+        };
+      })
     : defaultSlides;
 
   useEffect(() => {
@@ -72,7 +52,7 @@ const HeroBanner = ({ slides = [] }) => {
   const currentBanner = bannerSlides[currentSlide];
 
   return (
-    <div className="relative w-full h-[600px] overflow-hidden bg-gray-900">
+    <div className="relative w-full h-[800px] overflow-hidden bg-gray-900">
       {/* Slides */}
       {bannerSlides.map((slide, index) => (
         <div
@@ -116,7 +96,7 @@ const HeroBanner = ({ slides = [] }) => {
             <div className="flex gap-4 animate-slideUp animation-delay-400">
               <Button
                 onClick={() => window.location.href = currentBanner.ctaLink}
-                className="px-8 py-4 text-lg font-semibold bg-white text-gray-900 hover:bg-gray-100 rounded-full shadow-2xl hover:scale-105 transition-transform"
+                className="px-8 py-4 text-lg font-semibold  rounded-full shadow-2xl hover:scale-105 transition-transform"
               >
                 {currentBanner.cta}
               </Button>

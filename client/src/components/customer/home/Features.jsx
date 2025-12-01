@@ -6,25 +6,25 @@ const Features = () => {
       icon: <Truck size={32} />,
       title: 'Miễn Phí Vận Chuyển',
       description: 'Cho đơn hàng trên 500.000đ',
-      color: 'from-blue-500 to-cyan-500'
+      color: 'from-gray-700 to-gray-900'
     },
     {
       icon: <Shield size={32} />,
       title: 'Đảm Bảo Chất Lượng',
       description: 'Hoàn tiền 100% nếu lỗi',
-      color: 'from-green-500 to-emerald-500'
+      color: 'from-gray-800 to-gray-950'
     },
     {
       icon: <Headphones size={32} />,
       title: 'Hỗ Trợ 24/7',
       description: 'Tư vấn nhiệt tình, tận tâm',
-      color: 'from-purple-500 to-violet-500'
+      color: 'from-gray-700 to-gray-900'
     },
     {
       icon: <CreditCard size={32} />,
       title: 'Thanh Toán Đa Dạng',
       description: 'Hỗ trợ nhiều phương thức',
-      color: 'from-orange-500 to-red-500'
+      color: 'from-gray-800 to-gray-950'
     }
   ];
 
