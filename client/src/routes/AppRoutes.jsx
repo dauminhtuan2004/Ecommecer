@@ -17,6 +17,9 @@ import ResetPasswordPage from "../pages/Auth/ResetPasswordPage";
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import("../pages/Customer/Home/HomePage"));
+const ProductsPage = lazy(() => import("../pages/Customer/Product/ProductsPage"));
+const ProductDetailPage = lazy(() => import("../pages/Customer/Product/ProductDetailPage"));
+const CategoryPage = lazy(() => import("../pages/Customer/Product/CategoryPage"));
 const AdminDashboardPage = lazy(() => import("../pages/Admin/Dashboard/AdminDashboardPage"));
 const AdminProductsPage = lazy(() => import("../pages/Admin/Product/ProductsPage"));
 const AdminCategoriesPage = lazy(() => import("../pages/Admin/Category/CategoriesPage"));
@@ -52,6 +55,12 @@ const AppRoutes = () => {
             // </ProtectedRoute>
           }
         />
+        
+        {/* Product Routes */}
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/products/category/:id" element={<CategoryPage />} />
+        <Route path="/category/:id" element={<CategoryPage />} />
 
         {/* Admin Routes - WITH AdminLayout */}
         <Route

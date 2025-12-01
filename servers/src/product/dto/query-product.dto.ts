@@ -1,6 +1,6 @@
-import { IsOptional, IsInt, IsPositive, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';  // Thêm import cho Swagger
+import { IsOptional, IsInt, IsPositive, IsString, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class QueryProductDto {
   @ApiProperty({ 
@@ -43,4 +43,53 @@ export class QueryProductDto {
   @Type(() => Number)
   @IsInt()
   categoryId?: number;
+
+  @ApiProperty({ 
+    example: 1, 
+    description: 'ID brand để filter (tùy chọn)', 
+    required: false 
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  brandId?: number;
+
+  @ApiProperty({ 
+    example: 100000, 
+    description: 'Giá tối thiểu (tùy chọn)', 
+    required: false 
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  minPrice?: number;
+
+  @ApiProperty({ 
+    example: 500000, 
+    description: 'Giá tối đa (tùy chọn)', 
+    required: false 
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  maxPrice?: number;
+
+  @ApiProperty({ 
+    example: 'newest', 
+    description: 'Sắp xếp: newest, oldest, price-asc, price-desc, name-asc, name-desc', 
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @ApiProperty({ 
+    example: true, 
+    description: 'Chỉ hiển thị sản phẩm còn hàng (tùy chọn)', 
+    required: false 
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  inStock?: boolean;
 }

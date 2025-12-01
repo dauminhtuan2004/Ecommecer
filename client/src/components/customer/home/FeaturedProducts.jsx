@@ -1,4 +1,5 @@
-import { ShoppingCart, Heart, Eye, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import ProductCard from '../products/ProductCard';
 import Button from '../../common/Button';
 
 const FeaturedProducts = ({ products = [] }) => {
@@ -82,31 +83,8 @@ const FeaturedProducts = ({ products = [] }) => {
     }
   ];
 
-  // Map products từ API
-  const displayProducts = products.length > 0 
-    ? products.map(product => ({
-        id: product.id,
-        name: product.name,
-        price: product.basePrice,
-        originalPrice: product.originalPrice,
-        image: product.images?.[0]?.url || product.images?.[0] || 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab',
-        rating: product.rating || 4.5,
-        reviews: product.reviewCount || 0,
-        badge: product.badge || (product.discount > 0 ? `Sale ${product.discount}%` : 'New')
-      }))
-    : defaultProducts;
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
-
-  const calculateDiscount = (original, current) => {
-    if (!original) return 0;
-    return Math.round(((original - current) / original) * 100);
-  };
+  // Map products từ API hoặc sử dụng default
+  const displayProducts = products.length > 0 ? products : defaultProducts;
 
   return (
     <section className="py-16 bg-white">
@@ -124,86 +102,17 @@ const FeaturedProducts = ({ products = [] }) => {
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {displayProducts.map((product) => (
-            <div
-              key={product.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100"
-            >
-              {/* Image Container */}
-              <div className="relative overflow-hidden aspect-square bg-gray-100">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-
-                {/* Badge */}
-                {product.badge && (
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="inline-block px-3 py-1 text-xs font-bold rounded-full bg-gray-900 text-white">
-                      {product.badge}
-                    </span>
-                  </div>
-                )}
-
-                {/* Quick Actions */}
-                <div className="absolute top-3 right-3 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-100 hover:text-gray-900 transition-colors">
-                    <Heart size={18} />
-                  </button>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-100 hover:text-gray-900 transition-colors">
-                    <Eye size={18} />
-                  </button>
-                </div>
-
-                {/* Add to Cart Overlay */}
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button className="w-full bg-white text-gray-900 hover:bg-gray-100 rounded-full font-semibold shadow-lg">
-                    <ShoppingCart size={18} className="mr-2" />
-                    Thêm Vào Giỏ
-                  </Button>
-                </div>
-              </div>
-
-              {/* Product Info */}
-              <div className="p-4">
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-2">
-                  <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-semibold text-gray-900">{product.rating}</span>
-                  <span className="text-xs text-gray-500">({product.reviews})</span>
-                </div>
-
-                {/* Name */}
-                <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                  {product.name}
-                </h3>
-
-                {/* Price */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-gray-900">
-                    {formatPrice(product.price)}
-                  </span>
-                  {product.originalPrice && (
-                    <>
-                      <span className="text-sm text-gray-400 line-through">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                      <span className="text-xs font-bold text-red-500">
-                        -{calculateDiscount(product.originalPrice, product.price)}%
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
 
         {/* View All Button */}
         <div className="text-center">
-          <Button className="px-8 py-3 bg-gray-900 text-white hover:bg-gray-800 rounded-full font-semibold shadow-lg">
-            Xem Tất Cả Sản Phẩm
-          </Button>
+          <Link to="/products">
+            <Button variant="dark" className="px-8 py-3 rounded-full font-semibold shadow-lg">
+              Xem Tất Cả Sản Phẩm
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

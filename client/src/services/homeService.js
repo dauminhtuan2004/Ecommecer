@@ -23,12 +23,10 @@ const homeService = {
         // Get featured products
         axiosInstance.get('/products', {
           params: { 
-            featured: true,
             limit: 8,
-            sortBy: 'sold',
-            sortOrder: 'desc'
+            sortBy: 'newest'
           }
-        }).then(res => res.data?.products || res.data || []).catch(() => [])
+        }).then(res => res.data?.data || res.data || []).catch(() => [])
       ]);
 
       return {
@@ -53,12 +51,11 @@ const homeService = {
     try {
       const response = await axiosInstance.get('/products', {
         params: {
-          sortBy: 'createdAt',
-          sortOrder: 'desc',
+          sortBy: 'newest',
           limit
         }
       });
-      return response.data?.products || response.data || [];
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching new arrivals:', error);
       return [];
@@ -72,12 +69,11 @@ const homeService = {
     try {
       const response = await axiosInstance.get('/products', {
         params: {
-          sortBy: 'sold',
-          sortOrder: 'desc',
+          sortBy: 'newest',
           limit
         }
       });
-      return response.data?.products || response.data || [];
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching best sellers:', error);
       return [];
@@ -91,13 +87,11 @@ const homeService = {
     try {
       const response = await axiosInstance.get('/products', {
         params: {
-          onSale: true,
-          sortBy: 'discount',
-          sortOrder: 'desc',
+          sortBy: 'price-desc',
           limit
         }
       });
-      return response.data?.products || response.data || [];
+      return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching sale products:', error);
       return [];

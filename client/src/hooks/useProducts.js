@@ -27,10 +27,14 @@ export const useProducts = () => {
     try {
       setLoading(true);
       const response = await productService.getAll(filters);
-      const productsData = extractData(response);
+      
+      // Backend trả về { data: [], page, limit, total, totalPages }
+      const productsData = response?.data?.data || response?.data || [];
+      const total = response?.data?.total || 0;
+      const totalPagesFromAPI = response?.data?.totalPages || 1;
       
       setProducts(productsData);
-      setTotalPages(response?.total ? Math.ceil(response.total / filters.limit) : 1);
+      setTotalPages(totalPagesFromAPI);
     } catch (error) {
       console.error('Error loading products:', error);
       toast.error('Không thể tải danh sách sản phẩm');

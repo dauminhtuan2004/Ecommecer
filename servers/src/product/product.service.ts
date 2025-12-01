@@ -27,30 +27,106 @@ export class ProductService {
     return product;
   }
 
-  async findAll(query: QueryProductDto): Promise<Product[]> {
+  async findAll(query: QueryProductDto): Promise<any> {
     const cacheKey = `products:${JSON.stringify(query)}`;
-    let products = await this.cacheManager.get<Product[]>(cacheKey);
-    if (products) {
+    let cached = await this.cacheManager.get<any>(cacheKey);
+    if (cached) {
       console.log(`Cache hit for key: ${cacheKey}`);
-      return products;
+      return cached;
     }
 
     console.log(`Cache miss for key: ${cacheKey} - querying DB`);
-    const { page = 1, limit = 10, search, categoryId } = query;
+    const { 
+      page = 1, 
+      limit = 10, 
+      search, 
+      categoryId,
+      brandId,
+      minPrice,
+      maxPrice,
+      sortBy = 'newest',
+      inStock
+    } = query;
+    
     const skip = (page - 1) * limit;
-    products = await this.prisma.product.findMany({
-      where: {
-        name: { contains: search, mode: 'insensitive' },
-        categoryId,
-      },
+    
+    // Build where clause
+    const where: any = {};
+    
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+    
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+    
+    if (brandId) {
+      where.brandId = brandId;
+    }
+    
+    if (minPrice || maxPrice) {
+      where.basePrice = {};
+      if (minPrice) where.basePrice.gte = minPrice;
+      if (maxPrice) where.basePrice.lte = maxPrice;
+    }
+    
+    if (inStock) {
+      where.stock = { gt: 0 };
+    }
+    
+    // Build order by
+    let orderBy: any = {};
+    switch (sortBy) {
+      case 'price-asc':
+        orderBy = { basePrice: 'asc' };
+        break;
+      case 'price-desc':
+        orderBy = { basePrice: 'desc' };
+        break;
+      case 'name-asc':
+        orderBy = { name: 'asc' };
+        break;
+      case 'name-desc':
+        orderBy = { name: 'desc' };
+        break;
+      case 'oldest':
+        orderBy = { createdAt: 'asc' };
+        break;
+      case 'newest':
+      default:
+        orderBy = { createdAt: 'desc' };
+        break;
+    }
+
+    // Get total count
+    const total = await this.prisma.product.count({ where });
+    
+    // Get products
+    const products = await this.prisma.product.findMany({
+      where,
       skip,
       take: limit,
-      include: { variants: true, images: true, category: true, brand: true },
+      orderBy,
+      include: { 
+        variants: true, 
+        images: true, 
+        category: true, 
+        brand: true 
+      },
     });
 
-    await this.cacheManager.set(cacheKey, products, 3600);
+    const result = {
+      data: products,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+
+    await this.cacheManager.set(cacheKey, result, 3600);
     console.log(`Cache set for key: ${cacheKey}`);
-    return products;
+    return result;
   }
 
   async findOne(id: number): Promise<any | null> {

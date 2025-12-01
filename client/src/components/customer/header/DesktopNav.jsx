@@ -24,19 +24,22 @@ const DesktopNav = ({ scrolled, categories, categoryDropdown, setCategoryDropdow
               Shop
               <FaChevronDown size={16} />
             </button>
-            {categoryDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50">
+            {categoryDropdown && categories && categories.length > 0 && (
+              <div className="absolute top-full left-0 pt-2 w-56 z-[100]">
+                <div className="bg-white rounded-lg shadow-xl py-2">
                 {categories.map(cat => (
                   <Link
                     key={cat.id}
-                    to={`/products?category=${cat.slug}`}
-                    className={`block px-4 py-2 hover:bg-gray-50 ${
+                    to={`/category/${cat.id}`}
+                    className={`block px-4 py-2 hover:bg-gray-50 transition-colors ${
                       cat.highlight ? 'text-red-500 font-bold' : 'text-gray-700'
                     }`}
+                    onClick={() => setCategoryDropdown(false)}
                   >
                     {cat.name}
                   </Link>
                 ))}
+                </div>
               </div>
             )}
           </div>

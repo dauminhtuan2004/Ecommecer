@@ -4,6 +4,7 @@ import ProductActions from "./ProductActions";
 import ProductDetails from "./ProductDetail";
 import Button from "../../common/Button";
 import { Edit, MoreVertical, Layers, ChevronDown, ChevronUp, Package } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ProductRow = ({
   product,
@@ -103,7 +104,7 @@ const ProductRow = ({
         {/* Price */}
         <td className="px-6 py-4">
           <div className="font-semibold text-gray-900">
-            {formatPrice(product.basePrice)}
+            {formatPrice(product.basePrice || product.price || 0)}
           </div>
         </td>
 
@@ -201,10 +202,17 @@ const ProductRow = ({
             // Open variant modal to edit specific variant
             onManageVariants(product, variant);
           }}
-          onDeleteVariant={(variant) => {
-            if (window.confirm(`Xóa variant "${variant.size} - ${variant.color}"?`)) {
-              // Handle delete
-              console.log('Delete variant:', variant);
+          onDeleteVariant={async (variant) => {
+            if (window.confirm(`Xóa variant "${variant.size} - ${variant.color}"?\n\nHành động này không thể hoàn tác!`)) {
+              try {
+                const productService = (await import('../../../services/productService')).default;
+                await productService.deleteVariant(variant.id);
+                toast.success('Đã xóa variant!');
+                // Reload product list
+                window.location.reload();
+              } catch (error) {
+                toast.error('Không thể xóa variant: ' + (error.response?.data?.message || error.message));
+              }
             }
           }}
         />

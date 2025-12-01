@@ -22,15 +22,28 @@ export class ProductController {
 
   @Get()
   @ApiOperation({ summary: 'Get all products (Public)' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'categoryId', required: false, type: Number })
-  @ApiQuery({ name: 'featured', required: false, type: Boolean })
-  @ApiQuery({ name: 'onSale', required: false, type: Boolean })
-  @ApiQuery({ name: 'sortBy', required: false, type: String })
-  @ApiQuery({ name: 'sortOrder', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'List of products' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Trang hiện tại' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Số sản phẩm mỗi trang' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Tìm kiếm theo tên' })
+  @ApiQuery({ name: 'categoryId', required: false, type: Number, description: 'Lọc theo danh mục' })
+  @ApiQuery({ name: 'brandId', required: false, type: Number, description: 'Lọc theo thương hiệu' })
+  @ApiQuery({ name: 'minPrice', required: false, type: Number, description: 'Giá tối thiểu' })
+  @ApiQuery({ name: 'maxPrice', required: false, type: Number, description: 'Giá tối đa' })
+  @ApiQuery({ name: 'sortBy', required: false, type: String, description: 'Sắp xếp: newest, oldest, price-asc, price-desc, name-asc, name-desc' })
+  @ApiQuery({ name: 'inStock', required: false, type: Boolean, description: 'Chỉ sản phẩm còn hàng' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'List of products with pagination',
+    schema: {
+      example: {
+        data: [],
+        page: 1,
+        limit: 10,
+        total: 100,
+        totalPages: 10
+      }
+    }
+  })
   findAll(@Query() query: QueryProductDto) {
     return this.productService.findAll(query);
   }

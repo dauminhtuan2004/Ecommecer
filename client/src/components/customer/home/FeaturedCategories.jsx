@@ -1,40 +1,7 @@
 import { ArrowRight, Tag, TrendingUp, Star } from 'lucide-react';
 
 const FeaturedCategories = ({ categories = [] }) => {
-  const defaultCategories = [
-    {
-      id: 1,
-      name: 'Thời Trang Nam',
-      image: 'https://images.unsplash.com/photo-1490114538077-0a7f8cb49891',
-      productCount: 150,
-      tag: 'Hot',
-      color: 'from-gray-700 to-gray-900'
-    },
-    {
-      id: 2,
-      name: 'Thời Trang Nữ',
-      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b',
-      productCount: 280,
-      tag: 'New',
-      color: 'from-gray-800 to-gray-950'
-    },
-    {
-      id: 3,
-      name: 'Phụ Kiện',
-      image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f',
-      productCount: 95,
-      tag: 'Sale',
-      color: 'from-gray-700 to-gray-900'
-    },
-    {
-      id: 4,
-      name: 'Giày Dép',
-      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772',
-      productCount: 120,
-      tag: 'Trend',
-      color: 'from-gray-800 to-gray-950'
-    }
-  ];
+
 
   const gradientColors = [
     'from-gray-700 to-gray-900',
