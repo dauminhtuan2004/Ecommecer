@@ -6,6 +6,7 @@ const Select = ({
   error,
   required = false,
   className = '',
+  children,
   ...props 
 }) => {
   const baseClasses = 'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 cursor-pointer bg-white';
@@ -25,7 +26,7 @@ const Select = ({
         {...props}
         className={`${baseClasses} ${variantClasses}`}
       >
-        {options.map((opt) => (
+        {children || options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>

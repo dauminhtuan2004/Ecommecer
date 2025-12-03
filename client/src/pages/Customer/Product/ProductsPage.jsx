@@ -16,6 +16,7 @@ const ProductsPage = () => {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
+  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: 10000000 });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -35,16 +36,18 @@ const ProductsPage = () => {
     page: parseInt(searchParams.get('page')) || 1,
   });
 
-  // Load categories and brands
+  // Load categories, brands, and price range
   useEffect(() => {
     const loadFilters = async () => {
       try {
-        const [categoriesRes, brandsRes] = await Promise.all([
+        const [categoriesRes, brandsRes, priceRangeRes] = await Promise.all([
           categoryService.getAll(),
           productService.getBrands(),
+          productService.getPriceRange(),
         ]);
         setCategories(categoriesRes || []);
         setBrands(brandsRes?.data || []);
+        setPriceRange(priceRangeRes?.data || { minPrice: 0, maxPrice: 10000000 });
       } catch (error) {
         console.error('Error loading filters:', error);
       }
@@ -62,17 +65,21 @@ const ProductsPage = () => {
       setLoading(true);
       const filters = getFiltersFromURL();
       
-      const response = await productService.getAll({
+      // Build API params - only include values that should filter
+      const apiParams = {
         page: filters.page,
         limit: pagination.limit,
-        search: filters.search,
-        categoryId: filters.categoryId,
-        brandId: filters.brandId,
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice,
-        sortBy: filters.sortBy,
-        inStock: filters.inStock,
-      });
+      };
+      
+      if (filters.search) apiParams.search = filters.search;
+      if (filters.categoryId) apiParams.categoryId = parseInt(filters.categoryId);
+      if (filters.brandId) apiParams.brandId = parseInt(filters.brandId);
+      if (filters.minPrice) apiParams.minPrice = parseFloat(filters.minPrice);
+      if (filters.maxPrice) apiParams.maxPrice = parseFloat(filters.maxPrice);
+      if (filters.sortBy) apiParams.sortBy = filters.sortBy;
+      if (filters.inStock) apiParams.inStock = filters.inStock;
+      
+      const response = await productService.getAll(apiParams);
 
       // Fix: axios response có cấu trúc { data: { data: [], page, total, totalPages } }
       const productsData = response.data?.data || response.data || [];
@@ -96,11 +103,27 @@ const ProductsPage = () => {
   const handleFilterChange = (filters) => {
     const params = new URLSearchParams();
     
-    if (filters.categoryId) params.set('category', filters.categoryId);
-    if (filters.brandId) params.set('brand', filters.brandId);
-    if (filters.minPrice) params.set('minPrice', filters.minPrice);
-    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
-    if (filters.sortBy) params.set('sort', filters.sortBy);
+    // Convert string IDs to numbers and validate
+    if (filters.categoryId) {
+      const categoryId = parseInt(filters.categoryId);
+      if (!isNaN(categoryId)) params.set('category', categoryId);
+    }
+    if (filters.brandId) {
+      const brandId = parseInt(filters.brandId);
+      if (!isNaN(brandId)) params.set('brand', brandId);
+    }
+    // Always add price params to trigger filtering
+    if (filters.minPrice !== undefined && filters.minPrice !== '') {
+      const minPrice = parseFloat(filters.minPrice);
+      if (!isNaN(minPrice)) params.set('minPrice', minPrice);
+    }
+    if (filters.maxPrice !== undefined && filters.maxPrice !== '') {
+      const maxPrice = parseFloat(filters.maxPrice);
+      if (!isNaN(maxPrice)) params.set('maxPrice', maxPrice);
+    }
+    if (filters.sortBy) {
+      params.set('sort', filters.sortBy);
+    }
     if (filters.inStock) params.set('inStock', 'true');
     if (filters.search) params.set('search', filters.search);
     
@@ -159,6 +182,7 @@ const ProductsPage = () => {
                 <ProductFilter
                   categories={categories}
                   brands={brands}
+                  priceRange={priceRange}
                   currentFilters={getFiltersFromURL()}
                   onFilterChange={handleFilterChange}
                 />

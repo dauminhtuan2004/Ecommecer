@@ -1,0 +1,137 @@
+import { useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
+import Layout from '../../../components/layouts/Layout';
+import Button from '../../../components/common/Button';
+import CartEmpty from '../../../components/cart/CartEmpty';
+import CartItemsList from '../../../components/cart/CartItemsList';
+import CartSummary from '../../../components/cart/CartSummary';
+import { useAuth } from '../../../hooks/useAuth';
+import { useCart } from '../../../hooks/useCart';
+import toast from 'react-hot-toast';
+
+const CartPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { 
+    items: cartItems, 
+    count: cartCount, 
+    total: cartTotal,
+    updateCartItem,
+    removeFromCart,
+    clearCart 
+  } = useCart();
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(price);
+  };
+
+  const handleUpdateQuantity = useCallback((variantId, currentQuantity, delta) => {
+    if (delta === 0) {
+      // Direct input change
+      updateCartItem(variantId, currentQuantity);
+    } else {
+      // Plus/Minus button
+      const newQuantity = currentQuantity + delta;
+      if (newQuantity < 1) return;
+      updateCartItem(variantId, newQuantity);
+    }
+  }, [updateCartItem]);
+
+  const handleRemoveItem = useCallback((variantId) => {
+    if (window.confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+      removeFromCart(variantId);
+    }
+  }, [removeFromCart]);
+
+  const handleClearCart = useCallback(() => {
+    if (window.confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) {
+      clearCart();
+    }
+  }, [clearCart]);
+
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để thanh toán');
+      navigate('/login', { state: { from: '/cart' } });
+      return;
+    }
+    navigate('/checkout');
+  };
+
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <Layout>
+        <div className="bg-gray-50 min-h-screen py-16">
+          <div className="container mx-auto px-4">
+            <CartEmpty />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="bg-gray-50 min-h-screen py-8">
+        <div className="container mx-auto px-4 lg:px-8">
+          {/* Breadcrumb */}
+          <div className="mb-6">
+            <nav className="flex items-center space-x-2 text-sm text-gray-600">
+              <Link to="/" className="hover:text-gray-900">Trang chủ</Link>
+              <span>/</span>
+              <span className="text-gray-900 font-medium">Giỏ hàng</span>
+            </nav>
+          </div>
+
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Giỏ hàng của bạn
+            </h1>
+            <p className="text-gray-600">
+              Bạn có {cartCount} sản phẩm trong giỏ hàng
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <CartItemsList
+                items={cartItems}
+                count={cartCount}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemove={handleRemoveItem}
+                onClearAll={handleClearCart}
+                formatPrice={formatPrice}
+              />
+
+              {/* Continue Shopping */}
+              <div className="mt-6">
+                <Link to="/products">
+                  <Button variant="outline" icon={FaArrowLeft}>
+                    Tiếp tục mua sắm
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <CartSummary
+                total={cartTotal}
+                formatPrice={formatPrice}
+                onCheckout={handleCheckout}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default CartPage;

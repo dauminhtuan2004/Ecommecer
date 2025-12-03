@@ -1,6 +1,8 @@
 import { ArrowRight, Tag, TrendingUp, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const FeaturedCategories = ({ categories = [] }) => {
+  const navigate = useNavigate();
 
 
   const gradientColors = [
@@ -46,6 +48,7 @@ const FeaturedCategories = ({ categories = [] }) => {
           {displayCategories.map((category) => (
             <div
               key={category.id}
+              onClick={() => navigate(`/category/${category.id}`)}
               className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 h-[400px]"
             >
               {/* Background Image */}

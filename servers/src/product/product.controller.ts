@@ -20,6 +20,22 @@ import { multerConfig } from '../upload/multer.config';
 export class ProductController {
   constructor(private productService: ProductService) {}
 
+  @Get('price-range')
+  @ApiOperation({ summary: 'Get min and max price of all products (Public)' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Price range',
+    schema: {
+      example: {
+        minPrice: 0,
+        maxPrice: 5000000
+      }
+    }
+  })
+  getPriceRange() {
+    return this.productService.getPriceRange();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all products (Public)' })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Trang hiện tại' })

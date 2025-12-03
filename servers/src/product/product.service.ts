@@ -129,6 +129,22 @@ export class ProductService {
     return result;
   }
 
+  async getPriceRange() {
+    const result = await this.prisma.product.aggregate({
+      _min: {
+        basePrice: true,
+      },
+      _max: {
+        basePrice: true,
+      },
+    });
+
+    return {
+      minPrice: result._min.basePrice || 0,
+      maxPrice: result._max.basePrice || 10000000,
+    };
+  }
+
   async findOne(id: number): Promise<any | null> {
     const cacheKey = `product:${id}`;
     let product = await this.cacheManager.get(cacheKey);

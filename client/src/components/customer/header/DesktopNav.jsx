@@ -5,7 +5,9 @@ const DesktopNav = ({ scrolled, categories, categoryDropdown, setCategoryDropdow
   return (
     <div className="hidden lg:block transition-all duration-300">
       <div className="container mx-auto px-4 lg:px-8">
-        <nav className="flex items-center justify-center gap-8 py-3.5">
+        <nav className={`flex items-center justify-center gap-8 transition-all duration-300 ${
+          scrolled ? 'py-2' : 'py-3.5'
+        }`}>
           <Link to="/" className={`transition-colors duration-300 font-medium ${
             scrolled ? 'text-gray-700 hover:text-gray-900' : 'text-white hover:text-gray-200'
           }`}>

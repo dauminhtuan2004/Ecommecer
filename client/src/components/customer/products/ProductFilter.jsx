@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaFilter, FaTimes } from 'react-icons/fa';
 import Button from '../../common/Button';
 import Select from '../../common/Select';
@@ -6,6 +6,7 @@ import Select from '../../common/Select';
 const ProductFilter = ({ 
   categories = [], 
   brands = [],
+  priceRange = { minPrice: 0, maxPrice: 10000000 },
   onFilterChange,
   currentFilters = {}
 }) => {
@@ -13,15 +14,34 @@ const ProductFilter = ({
   const [filters, setFilters] = useState({
     categoryId: currentFilters.categoryId || '',
     brandId: currentFilters.brandId || '',
-    minPrice: currentFilters.minPrice || '',
-    maxPrice: currentFilters.maxPrice || '',
+    minPrice: parseInt(currentFilters.minPrice) || priceRange.minPrice,
+    maxPrice: parseInt(currentFilters.maxPrice) || priceRange.maxPrice,
     sortBy: currentFilters.sortBy || 'newest',
     inStock: currentFilters.inStock || false,
   });
 
+  // Update filters when currentFilters or priceRange change
+  useEffect(() => {
+    setFilters({
+      categoryId: currentFilters.categoryId || '',
+      brandId: currentFilters.brandId || '',
+      minPrice: parseInt(currentFilters.minPrice) || priceRange.minPrice,
+      maxPrice: parseInt(currentFilters.maxPrice) || priceRange.maxPrice,
+      sortBy: currentFilters.sortBy || 'newest',
+      inStock: currentFilters.inStock || false,
+    });
+  }, [currentFilters, priceRange]);
+
   const handleFilterChange = (name, value) => {
     const newFilters = { ...filters, [name]: value };
     setFilters(newFilters);
+  };
+
+  // Auto-apply filters when sortBy, minPrice, or maxPrice change
+  const handleAutoApplyChange = (name, value) => {
+    const newFilters = { ...filters, [name]: value };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const applyFilters = () => {
@@ -33,8 +53,8 @@ const ProductFilter = ({
     const defaultFilters = {
       categoryId: '',
       brandId: '',
-      minPrice: '',
-      maxPrice: '',
+      minPrice: priceRange.minPrice,
+      maxPrice: priceRange.maxPrice,
       sortBy: 'newest',
       inStock: false,
     };
@@ -60,7 +80,7 @@ const ProductFilter = ({
         </label>
         <Select
           value={filters.sortBy}
-          onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+          onChange={(e) => handleAutoApplyChange('sortBy', e.target.value)}
           className="text-sm"
         >
           {sortOptions.map(option => (
@@ -72,25 +92,23 @@ const ProductFilter = ({
       </div>
 
       {/* Category */}
-      {categories.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Danh mục
-          </label>
-          <Select
-            value={filters.categoryId}
-            onChange={(e) => handleFilterChange('categoryId', e.target.value)}
-            className="text-sm"
-          >
-            <option value="">Tất cả</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-      )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Danh mục
+        </label>
+        <Select
+          value={filters.categoryId}
+          onChange={(e) => handleAutoApplyChange('categoryId', e.target.value)}
+          className="text-sm"
+        >
+          <option value="">Tất cả danh mục</option>
+          {categories && categories.length > 0 && categories.map(cat => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </Select>
+      </div>
 
       {/* Brand */}
       {brands.length > 0 && (
@@ -100,7 +118,7 @@ const ProductFilter = ({
           </label>
           <Select
             value={filters.brandId}
-            onChange={(e) => handleFilterChange('brandId', e.target.value)}
+            onChange={(e) => handleAutoApplyChange('brandId', e.target.value)}
             className="text-sm"
           >
             <option value="">Tất cả</option>
@@ -113,26 +131,66 @@ const ProductFilter = ({
         </div>
       )}
 
-      {/* Price Range */}
+      {/* Price Range Slider */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Khoảng giá
+          Khoảng giá: {filters.minPrice.toLocaleString('vi-VN')}đ - {filters.maxPrice.toLocaleString('vi-VN')}đ
         </label>
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            placeholder="Từ"
-            value={filters.minPrice}
-            onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-          />
-          <input
-            type="number"
-            placeholder="Đến"
-            value={filters.maxPrice}
-            onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
-          />
+        <div className="relative pt-1">
+          <div className="relative">
+            {/* Background track */}
+            <div className="absolute w-full h-2 bg-gray-200 rounded-lg top-1/2 -translate-y-1/2"></div>
+            {/* Active range track */}
+            <div 
+              className="absolute h-2 bg-gray-900 rounded-lg top-1/2 -translate-y-1/2"
+              style={{
+                left: `${((filters.minPrice - priceRange.minPrice) / (priceRange.maxPrice - priceRange.minPrice)) * 100}%`,
+                right: `${100 - ((filters.maxPrice - priceRange.minPrice) / (priceRange.maxPrice - priceRange.minPrice)) * 100}%`
+              }}
+            ></div>
+            {/* Min price slider */}
+            <input
+              type="range"
+              min={priceRange.minPrice}
+              max={priceRange.maxPrice}
+              step="100000"
+              value={filters.minPrice}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (value <= filters.maxPrice) {
+                  handleFilterChange('minPrice', value);
+                }
+              }}
+              onMouseUp={() => {
+                handleAutoApplyChange('minPrice', filters.minPrice);
+              }}
+              onTouchEnd={() => {
+                handleAutoApplyChange('minPrice', filters.minPrice);
+              }}
+              className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-900 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow"
+            />
+            {/* Max price slider */}
+            <input
+              type="range"
+              min={priceRange.minPrice}
+              max={priceRange.maxPrice}
+              step="100000"
+              value={filters.maxPrice}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                if (value >= filters.minPrice) {
+                  handleFilterChange('maxPrice', value);
+                }
+              }}
+              onMouseUp={() => {
+                handleAutoApplyChange('maxPrice', filters.maxPrice);
+              }}
+              onTouchEnd={() => {
+                handleAutoApplyChange('maxPrice', filters.maxPrice);
+              }}
+              className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-900 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow"
+            />
+          </div>
         </div>
       </div>
 

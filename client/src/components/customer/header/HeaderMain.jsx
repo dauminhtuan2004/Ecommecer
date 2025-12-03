@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import { FaSearch, FaShoppingCart, FaUser, FaHeart, FaBars, FaTimes, FaChevronDown, FaUserCircle, FaClipboardList, FaUserShield, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../../../hooks/useAuth';
+import { useCartCount } from '../../../hooks/useCart';
 import Button from '../../common/Button';
 import Input from '../../common/Input';
 import { useState, useRef, useEffect } from 'react';
 
 const HeaderMain = ({ scrolled, searchOpen, setSearchOpen, mobileMenuOpen, setMobileMenuOpen }) => {
   const { user, logout } = useAuth();
+  const cartCount = useCartCount();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -33,16 +35,20 @@ const HeaderMain = ({ scrolled, searchOpen, setSearchOpen, mobileMenuOpen, setMo
   return (
     <div className="transition-all duration-300">
       <div className="container mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className={`flex items-center justify-between transition-all duration-300 ${
+          scrolled ? 'h-16' : 'h-20'
+        }`}>
           {/* Logo */}
           <Link to="/" className="flex items-center gap-1">
             <img 
               src="/logo.png" 
               alt="Logo" 
-              className="w-30 h-30 object-contain"
+              className={`object-contain transition-all duration-300 ${
+                scrolled ? 'w-24 h-24' : 'w-30 h-30'
+              }`}
             />
-            <span className={`text-2xl font-bold transition-colors duration-300 ${
-              scrolled ? 'text-gray-900' : 'text-white'
+            <span className={`font-bold transition-all duration-300 ${
+              scrolled ? 'text-xl text-gray-900' : 'text-2xl text-white'
             }`}>
               MINH TUAN STORE
             </span>
@@ -111,11 +117,13 @@ const HeaderMain = ({ scrolled, searchOpen, setSearchOpen, mobileMenuOpen, setMo
               }`}
             >
               <FaShoppingCart size={24} />
-              <span className={`absolute -top-2 -right-2 w-5 h-5 text-white text-xs rounded-full flex items-center justify-center transition-colors duration-300 ${
-                scrolled ? 'bg-gray-900' : 'bg-white/30 backdrop-blur-sm'
-              }`}>
-                5
-              </span>
+              {cartCount > 0 && (
+                <span className={`absolute -top-2 -right-2 min-w-5 h-5 px-1.5 text-white text-xs rounded-full flex items-center justify-center transition-colors duration-300 ${
+                  scrolled ? 'bg-red-600' : 'bg-red-500'
+                }`}>
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </Link>
 
             {/* User */}

@@ -20,6 +20,7 @@ const HomePage = lazy(() => import("../pages/Customer/Home/HomePage"));
 const ProductsPage = lazy(() => import("../pages/Customer/Product/ProductsPage"));
 const ProductDetailPage = lazy(() => import("../pages/Customer/Product/ProductDetailPage"));
 const CategoryPage = lazy(() => import("../pages/Customer/Product/CategoryPage"));
+const CartPage = lazy(() => import("../pages/Customer/Cart/CartPage"));
 const AdminDashboardPage = lazy(() => import("../pages/Admin/Dashboard/AdminDashboardPage"));
 const AdminProductsPage = lazy(() => import("../pages/Admin/Product/ProductsPage"));
 const AdminCategoriesPage = lazy(() => import("../pages/Admin/Category/CategoriesPage"));
@@ -61,6 +62,9 @@ const AppRoutes = () => {
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/products/category/:id" element={<CategoryPage />} />
         <Route path="/category/:id" element={<CategoryPage />} />
+
+        {/* Cart Route */}
+        <Route path="/cart" element={<CartPage />} />
 
         {/* Admin Routes - WITH AdminLayout */}
         <Route

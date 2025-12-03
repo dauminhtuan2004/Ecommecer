@@ -2,6 +2,11 @@ import axiosInstance from "../config/api.config";
 
 // Sử dụng named exports thay vì default export
 export const productService = {
+  // Get price range
+  getPriceRange: async () => {
+    return await axiosInstance.get("/products/price-range");
+  },
+
   // Get all products với pagination và filters
   getAll: async (params = {}) => {
     const { page = 1, limit = 10, search = "", categoryId = "" } = params;

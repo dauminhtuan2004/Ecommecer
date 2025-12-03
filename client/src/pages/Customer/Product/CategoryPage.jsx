@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { FaFilter } from 'react-icons/fa';
 import Layout from '../../../components/layouts/Layout';
 import ProductGrid from '../../../components/customer/products/ProductGrid';
 import ProductFilter from '../../../components/customer/products/ProductFilter';
@@ -15,6 +16,8 @@ const CategoryPage = () => {
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showFilter, setShowFilter] = useState(false);
+  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: 10000000 });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
@@ -47,17 +50,21 @@ const CategoryPage = () => {
     loadCategory();
   }, [id]);
 
-  // Load brands
+  // Load brands and price range
   useEffect(() => {
-    const loadBrands = async () => {
+    const loadBrandsAndPrice = async () => {
       try {
-        const brandsRes = await productService.getBrands();
+        const [brandsRes, priceRangeRes] = await Promise.all([
+          productService.getBrands(),
+          productService.getPriceRange(),
+        ]);
         setBrands(brandsRes?.data || []);
+        setPriceRange(priceRangeRes?.data || { minPrice: 0, maxPrice: 10000000 });
       } catch (error) {
-        console.error('Error loading brands:', error);
+        console.error('Error loading brands and price range:', error);
       }
     };
-    loadBrands();
+    loadBrandsAndPrice();
   }, []);
 
   // Load products
@@ -74,16 +81,20 @@ const CategoryPage = () => {
       setLoading(true);
       const filters = getFiltersFromURL();
       
-      const response = await productService.getAll({
+      // Build API params - only include values that should filter
+      const apiParams = {
         page: filters.page,
         limit: pagination.limit,
         categoryId: category.id,
-        brandId: filters.brandId,
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice,
-        sortBy: filters.sortBy,
-        inStock: filters.inStock,
-      });
+      };
+      
+      if (filters.brandId) apiParams.brandId = parseInt(filters.brandId);
+      if (filters.minPrice) apiParams.minPrice = parseFloat(filters.minPrice);
+      if (filters.maxPrice) apiParams.maxPrice = parseFloat(filters.maxPrice);
+      if (filters.sortBy) apiParams.sortBy = filters.sortBy;
+      if (filters.inStock) apiParams.inStock = filters.inStock;
+      
+      const response = await productService.getAll(apiParams);
 
       // Fix: axios response có cấu trúc { data: { data: [], page, total, totalPages } }
       const productsData = response.data?.data || response.data || [];
@@ -107,9 +118,19 @@ const CategoryPage = () => {
   const handleFilterChange = (filters) => {
     const params = new URLSearchParams();
     
-    if (filters.brandId) params.set('brand', filters.brandId);
-    if (filters.minPrice) params.set('minPrice', filters.minPrice);
-    if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+    // Convert string IDs to numbers and validate
+    if (filters.brandId) {
+      const brandId = parseInt(filters.brandId);
+      if (!isNaN(brandId)) params.set('brand', brandId);
+    }
+    if (filters.minPrice !== undefined && filters.minPrice !== '') {
+      const minPrice = parseFloat(filters.minPrice);
+      if (!isNaN(minPrice)) params.set('minPrice', minPrice);
+    }
+    if (filters.maxPrice !== undefined && filters.maxPrice !== '') {
+      const maxPrice = parseFloat(filters.maxPrice);
+      if (!isNaN(maxPrice)) params.set('maxPrice', maxPrice);
+    }
     if (filters.sortBy) params.set('sort', filters.sortBy);
     if (filters.inStock) params.set('inStock', 'true');
     
@@ -155,49 +176,61 @@ const CategoryPage = () => {
 
           {/* Category Header */}
           {category && (
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {category.name}
-              </h1>
-              {category.description && (
-                <p className="text-gray-600 mb-4">{category.description}</p>
-              )}
-              <p className="text-gray-600">
-                Tìm thấy {pagination.total} sản phẩm
-              </p>
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {category.name}
+                </h1>
+                {category.description && (
+                  <p className="text-gray-600 mb-2">{category.description}</p>
+                )}
+                <p className="text-gray-600">
+                  Tìm thấy {pagination.total} sản phẩm
+                </p>
+              </div>
+
+              {/* Filter Toggle Button */}
+              <button
+                onClick={() => setShowFilter(!showFilter)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                  showFilter 
+                    ? 'bg-gray-900 text-white border-gray-900' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900'
+                }`}
+              >
+                <FaFilter size={16} />
+                <span className="font-medium">Bộ lọc</span>
+              </button>
             </div>
           )}
 
-          {/* Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Sidebar Filter */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-                <h2 className="text-lg font-bold mb-4">Bộ lọc</h2>
+          {/* Filter Section - Collapsible */}
+          {showFilter && (
+            <div className="mb-6 animate-fadeIn">
+              <div className="bg-white rounded-lg shadow-sm p-6">
                 <ProductFilter
                   brands={brands}
+                  priceRange={priceRange}
                   currentFilters={getFiltersFromURL()}
                   onFilterChange={handleFilterChange}
                 />
               </div>
             </div>
+          )}
 
-            {/* Products Grid */}
-            <div className="lg:col-span-3">
-              <ProductGrid products={products} loading={loading} />
+          {/* Products Grid */}
+          <ProductGrid products={products} loading={loading} />
 
-              {/* Pagination */}
-              {!loading && products.length > 0 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                </div>
-              )}
+          {/* Pagination */}
+          {!loading && products.length > 0 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+              />
             </div>
-          </div>
+          )}
         </div>
       </div>
     </Layout>
