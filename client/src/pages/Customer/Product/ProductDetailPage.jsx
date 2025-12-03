@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FaStar, FaShoppingCart, FaHeart, FaMinus, FaPlus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '../../../components/layouts/Layout';
-import Button from '../../../components/common/Button';
+import { ProductImageGallery, ProductDetails } from '../../../components/customer/products/ProductDetail';
 import { productService } from '../../../services/productService';
+import { useCart } from '../../../hooks/useCart';
 import toast from 'react-hot-toast';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -20,7 +22,6 @@ const ProductDetailPage = () => {
     loadProduct();
   }, [id]);
 
-  // Cập nhật variant khi chọn size hoặc color
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
       const matchingVariant = product.variants.find(
@@ -31,6 +32,14 @@ const ProductDetailPage = () => {
       );
       if (matchingVariant) {
         setSelectedVariant(matchingVariant);
+        
+        const variantImage = product.images?.find(img => img.variantId === matchingVariant.id);
+        if (variantImage) {
+          const imageIndex = product.images.findIndex(img => img.id === variantImage.id);
+          if (imageIndex !== -1) {
+            setSelectedImage(imageIndex);
+          }
+        }
       }
     }
   }, [selectedSize, selectedColor, product]);
@@ -42,48 +51,68 @@ const ProductDetailPage = () => {
       const productData = response.data || response;
       setProduct(productData);
       
-      // Tách size và color từ variants
       if (productData.variants && productData.variants.length > 0) {
         const sizes = [...new Set(productData.variants.map(v => v.size).filter(Boolean))];
         const colors = [...new Set(productData.variants.map(v => v.color).filter(Boolean))];
         
         if (sizes.length > 0) setSelectedSize(sizes[0]);
         if (colors.length > 0) setSelectedColor(colors[0]);
-        
-        // Set variant mặc định
         setSelectedVariant(productData.variants[0]);
       }
     } catch (error) {
-      console.error('Error loading product:', error);
       toast.error('Không tìm thấy sản phẩm');
     } finally {
       setLoading(false);
     }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
+  const getVariantImage = () => {
+    const variantImage = product.images?.find(img => img.variantId === selectedVariant.id);
+    return variantImage?.url || variantImage?.imageUrl || 
+           product.images?.[0]?.url || product.images?.[0]?.imageUrl || 
+           product.image;
   };
 
-  const handleQuantityChange = (delta) => {
-    const newQuantity = quantity + delta;
-    if (newQuantity >= 1) {
-      setQuantity(newQuantity);
+  const handleAddToCart = (buyNow = false) => {
+    if (!selectedVariant) {
+      toast.error('Vui lòng chọn size và màu sắc');
+      return;
+    }
+
+    if (quantity > selectedVariant.stock) {
+      toast.error(`Chỉ còn ${selectedVariant.stock} sản phẩm trong kho`);
+      return;
+    }
+
+    const productData = {
+      id: product.id,
+      name: product.name,
+      image: getVariantImage(),
+      variant: {
+        id: selectedVariant.id,
+        price: selectedVariant.price,
+        size: selectedVariant.size,
+        color: selectedVariant.color,
+        stock: selectedVariant.stock,
+      }
+    };
+
+    addToCart(selectedVariant.id, quantity, productData);
+    
+    if (buyNow) {
+      setTimeout(() => navigate('/cart'), 500);
+    } else {
+      toast.success('Thêm vào giỏ hàng thành công!', { duration: 2000 });
     }
   };
 
-  const handleAddToCart = () => {
-    toast.success('Đã thêm vào giỏ hàng!');
-  };
-
   const handlePrevImage = () => {
+    const images = product.images || [];
     setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const handleNextImage = () => {
+    const images = product.images || [];
     setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
@@ -141,229 +170,27 @@ const ProductDetailPage = () => {
           {/* Product Detail */}
           <div className="bg-white rounded-lg shadow-sm p-6 lg:p-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-              {/* Images */}
-              <div>
-                {/* Main Image với Navigation */}
-                <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-gray-100 group">
-                  <img
-                    src={images[selectedImage]?.url || '/placeholder-product.jpg'}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Navigation Buttons - hiện khi có nhiều ảnh */}
-                  {images.length > 1 && (
-                    <>
-                      <button
-                        onClick={handlePrevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        aria-label="Previous image"
-                      >
-                        <FaChevronLeft size={20} />
-                      </button>
-                      <button
-                        onClick={handleNextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        aria-label="Next image"
-                      >
-                        <FaChevronRight size={20} />
-                      </button>
-                      
-                      {/* Image Counter */}
-                      <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {selectedImage + 1} / {images.length}
-                      </div>
-                    </>
-                  )}
-                </div>
-                
-                {/* Thumbnails */}
-                {images.length > 1 && (
-                  <div className="grid grid-cols-5 gap-2">
-                    {images.map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImage(idx)}
-                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                          selectedImage === idx 
-                            ? 'border-gray-900 ring-2 ring-gray-900 ring-offset-2' 
-                            : 'border-gray-200 hover:border-gray-400'
-                        }`}
-                      >
-                        <img
-                          src={img.url}
-                          alt={`${product.name} ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ProductImageGallery
+                images={images}
+                selectedImage={selectedImage}
+                onImageSelect={setSelectedImage}
+                onPrevImage={handlePrevImage}
+                onNextImage={handleNextImage}
+                productName={product.name}
+              />
 
-              {/* Info */}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                  {product.name}
-                </h1>
-
-                {/* Rating */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar key={i} size={18} />
-                    ))}
-                  </div>
-                  <span className="text-gray-600">(0 đánh giá)</span>
-                </div>
-
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="flex items-center gap-4 mb-2">
-                    <span className="text-4xl font-bold text-gray-900">
-                      {formatPrice(currentPrice)}
-                    </span>
-                    {originalPrice && (
-                      <span className="text-2xl text-gray-400 line-through">
-                        {formatPrice(originalPrice)}
-                      </span>
-                    )}
-                  </div>
-                  {selectedVariant && (selectedSize || selectedColor) && (
-                    <p className="text-sm text-gray-600">
-                      Đang chọn: {selectedSize && `Size ${selectedSize}`}{selectedSize && selectedColor && ' - '}{selectedColor && `Màu ${selectedColor}`}
-                    </p>
-                  )}
-                </div>
-
-                {/* Description */}
-                <div className="mb-6">
-                  <h3 className="font-bold text-gray-900 mb-2">Mô tả</h3>
-                  <p className="text-gray-600">
-                    {product.description || 'Chưa có mô tả cho sản phẩm này.'}
-                  </p>
-                </div>
-
-                {/* Size Selection */}
-                {product.variants && product.variants.length > 0 && (
-                  <>
-                    {/* Sizes */}
-                    {(() => {
-                      const sizes = [...new Set(product.variants.map(v => v.size).filter(Boolean))];
-                      if (sizes.length > 0) {
-                        return (
-                          <div className="mb-6">
-                            <h3 className="font-bold text-gray-900 mb-3">Size</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {sizes.map((size) => (
-                                <button
-                                  key={size}
-                                  onClick={() => setSelectedSize(size)}
-                                  className={`px-4 py-2 rounded-lg border-2 transition-colors font-medium ${
-                                    selectedSize === size
-                                      ? 'border-gray-900 bg-gray-900 text-white'
-                                      : 'border-gray-300 hover:border-gray-400'
-                                  }`}
-                                >
-                                  {size}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-
-                    {/* Colors */}
-                    {(() => {
-                      const colors = [...new Set(product.variants.map(v => v.color).filter(Boolean))];
-                      if (colors.length > 0) {
-                        return (
-                          <div className="mb-6">
-                            <h3 className="font-bold text-gray-900 mb-3">Màu sắc</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {colors.map((color) => (
-                                <button
-                                  key={color}
-                                  onClick={() => setSelectedColor(color)}
-                                  className={`px-4 py-2 rounded-lg border-2 transition-colors font-medium ${
-                                    selectedColor === color
-                                      ? 'border-gray-900 bg-gray-900 text-white'
-                                      : 'border-gray-300 hover:border-gray-400'
-                                  }`}
-                                >
-                                  {color}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </>
-                )}
-
-                {/* Quantity */}
-                <div className="mb-6">
-                  <h3 className="font-bold text-gray-900 mb-3">Số lượng</h3>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center border-2 border-gray-300 rounded-lg">
-                      <button
-                        onClick={() => handleQuantityChange(-1)}
-                        className="p-3 hover:bg-gray-100"
-                      >
-                        <FaMinus size={14} />
-                      </button>
-                      <span className="px-6 font-bold">{quantity}</span>
-                      <button
-                        onClick={() => handleQuantityChange(1)}
-                        className="p-3 hover:bg-gray-100"
-                      >
-                        <FaPlus size={14} />
-                      </button>
-                    </div>
-                    <span className="text-gray-600">
-                      {selectedVariant?.stock || product.stock || 0} sản phẩm có sẵn
-                    </span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-4 mb-6">
-                  <Button
-                    variant="dark"
-                    icon={FaShoppingCart}
-                    className="flex-1"
-                    onClick={handleAddToCart}
-                  >
-                    Thêm vào giỏ
-                  </Button>
-                  <Button
-                    variant="outline"
-                    icon={FaHeart}
-                    className="px-4"
-                  >
-                  </Button>
-                </div>
-
-                {/* Additional Info */}
-                <div className="border-t pt-6 space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">SKU:</span>
-                    <span className="font-medium">{product.sku || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Danh mục:</span>
-                    <span className="font-medium">{product.category?.name || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Thương hiệu:</span>
-                    <span className="font-medium">{product.brand?.name || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
+              <ProductDetails
+                product={product}
+                currentPrice={currentPrice}
+                originalPrice={originalPrice}
+                selectedSize={selectedSize}
+                selectedColor={selectedColor}
+                quantity={quantity}
+                onSizeSelect={setSelectedSize}
+                onColorSelect={setSelectedColor}
+                onQuantityChange={setQuantity}
+                onAddToCart={handleAddToCart}
+              />
             </div>
           </div>
         </div>

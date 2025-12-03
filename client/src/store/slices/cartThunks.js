@@ -1,39 +1,37 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import cartService from '../../services/cartService';
 
-/**
- * Fetch cart from server
- * Backend returns: { cartItems: [...], total: ... }
- */
+const getImageUrl = (images, variantId) => {
+  const variantImage = images.find(img => img.variantId === variantId);
+  return variantImage?.url || images[0]?.url || images[0]?.imageUrl;
+};
+
+const transformCartItem = (item) => ({
+  variantId: item.variantId,
+  quantity: item.quantity,
+  product: {
+    id: item.variant?.product?.id,
+    name: item.variant?.product?.name,
+    image: getImageUrl(item.variant?.product?.images || [], item.variantId),
+    variant: {
+      id: item.variant?.id,
+      price: item.variant?.price,
+      size: item.variant?.size,
+      color: item.variant?.color,
+      stock: item.variant?.stock,
+    }
+  },
+  addedAt: item.createdAt || new Date().toISOString()
+});
+
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, { rejectWithValue }) => {
     try {
       const response = await cartService.getCart();
-      console.log('fetchCart response:', response.data);
-      
       const cartItems = response.data.cartItems || [];
-      
-      // Transform to client format
-      return cartItems.map(item => ({
-        variantId: item.variantId,
-        quantity: item.quantity,
-        product: {
-          id: item.variant?.product?.id,
-          name: item.variant?.product?.name,
-          image: item.variant?.product?.images?.[0]?.imageUrl,
-          variant: {
-            id: item.variant?.id,
-            price: item.variant?.price,
-            size: item.variant?.size,
-            color: item.variant?.color,
-            stock: item.variant?.stock,
-          }
-        },
-        addedAt: item.createdAt || new Date().toISOString()
-      }));
+      return cartItems.map(transformCartItem);
     } catch (error) {
-      console.error('fetchCart error:', error);
       return rejectWithValue(error.response?.data?.message || 'Không thể tải giỏ hàng');
     }
   }
@@ -46,11 +44,9 @@ export const addToCartServer = createAsyncThunk(
   'cart/addToCartServer',
   async ({ variantId, quantity, productData }, { rejectWithValue }) => {
     try {
-      const response = await cartService.addItem(variantId, quantity);
-      console.log('addToCartServer response:', response.data);
+      await cartService.addItem(variantId, quantity);
       return { variantId, quantity, productData };
     } catch (error) {
-      console.error('addToCartServer error:', error);
       return rejectWithValue(error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
     }
   }
@@ -63,11 +59,9 @@ export const updateCartServer = createAsyncThunk(
   'cart/updateCartServer',
   async ({ variantId, quantity }, { rejectWithValue }) => {
     try {
-      const response = await cartService.updateItem(variantId, quantity);
-      console.log('updateCartServer response:', response.data);
+      await cartService.updateItem(variantId, quantity);
       return { variantId, quantity };
     } catch (error) {
-      console.error('updateCartServer error:', error);
       return rejectWithValue(error.response?.data?.message || 'Không thể cập nhật giỏ hàng');
     }
   }
@@ -80,28 +74,21 @@ export const removeFromCartServer = createAsyncThunk(
   'cart/removeFromCartServer',
   async (variantId, { rejectWithValue }) => {
     try {
-      const response = await cartService.removeItem(variantId);
-      console.log('removeFromCartServer response:', response.data);
+      await cartService.removeItem(variantId);
       return variantId;
     } catch (error) {
-      console.error('removeFromCartServer error:', error);
       return rejectWithValue(error.response?.data?.message || 'Không thể xóa sản phẩm');
     }
   }
 );
 
-/**
- * Clear all cart items on server
- */
 export const clearCartServer = createAsyncThunk(
   'cart/clearCartServer',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await cartService.clearCart();
-      console.log('clearCartServer response:', response.data);
+      await cartService.clearCart();
       return true;
     } catch (error) {
-      console.error('clearCartServer error:', error);
       return rejectWithValue(error.response?.data?.message || 'Không thể xóa giỏ hàng');
     }
   }

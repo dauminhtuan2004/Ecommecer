@@ -1,18 +1,8 @@
-import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { FaShoppingCart, FaHeart, FaEye, FaStar } from 'react-icons/fa';
+import { FaHeart, FaEye, FaStar } from 'react-icons/fa';
 import Button from '../../common/Button';
-import AddToCartModal from './AddToCartModal';
-import { useCart } from '../../../hooks/useCart';
 
 const ProductCard = ({ product }) => {
-  const [showModal, setShowModal] = useState(false);
-  const { addToCart } = useCart();
-
-  const handleAddToCart = useCallback((variantId, quantity, productData) => {
-    addToCart(variantId, quantity, productData);
-    return true;
-  }, [addToCart]);
   const {
     id,
     name,
@@ -122,25 +112,18 @@ const ProductCard = ({ product }) => {
           )}
         </div>
 
-        {/* Add to Cart Button */}
-        <Button
-          variant="dark"
-          fullWidth
-          icon={FaShoppingCart}
-          className="hover:bg-gray-800 transition-colors duration-300"
-          onClick={() => setShowModal(true)}
-        >
-          Thêm vào giỏ
-        </Button>
+        {/* View Detail Button */}
+        <Link to={`/products/${id}`}>
+          <Button
+            variant="dark"
+            fullWidth
+            icon={FaEye}
+            className="hover:bg-gray-800 transition-colors duration-300"
+          >
+            Xem chi tiết
+          </Button>
+        </Link>
       </div>
-
-      {/* Add to Cart Modal */}
-      <AddToCartModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        product={product}
-        onAddToCart={handleAddToCart}
-      />
     </div>
   );
 };

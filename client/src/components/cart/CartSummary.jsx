@@ -1,12 +1,23 @@
 import Button from '../common/Button';
 
-const CartSummary = ({ total, formatPrice, onCheckout }) => {
+const CartSummary = ({ total, selectedCount, totalCount, formatPrice, onCheckout }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm sticky top-8">
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">
           Tóm tắt đơn hàng
         </h2>
+
+        {/* Selected Items Count */}
+        {selectedCount !== undefined && totalCount !== undefined && (
+          <div className="mb-4 pb-4 border-b border-gray-200">
+            <p className="text-sm text-gray-600">
+              Đã chọn{' '}
+              <span className="font-semibold text-blue-600">{selectedCount}</span>
+              {' '}/ {totalCount} sản phẩm
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4 mb-6">
           <div className="flex justify-between text-gray-600">
@@ -38,9 +49,16 @@ const CartSummary = ({ total, formatPrice, onCheckout }) => {
           fullWidth
           onClick={onCheckout}
           className="mb-4"
+          disabled={selectedCount === 0}
         >
           Tiến hành thanh toán
         </Button>
+        
+        {selectedCount === 0 && (
+          <p className="text-xs text-red-500 text-center -mt-2 mb-4">
+            Vui lòng chọn ít nhất một sản phẩm
+          </p>
+        )}
 
         <div className="text-sm text-gray-600 space-y-2">
           <p className="flex items-center gap-2">

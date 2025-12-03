@@ -29,7 +29,21 @@ export class CartService {
     console.log(`Cache miss for cart ${userId} - querying DB`);
     cart = await this.prisma.cart.findUnique({
       where: { userId },
-      include: { cartItems: { include: { variant: true } } },  // variant: ProductVariant implicit
+      include: { 
+        cartItems: { 
+          include: { 
+            variant: {
+              include: {
+                product: {
+                  include: {
+                    images: true
+                  }
+                }
+              }
+            }
+          } 
+        } 
+      },
     });
 
     if (!cart) throw new NotFoundException('Cart not found');

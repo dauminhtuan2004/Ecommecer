@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import Layout from '../../../components/layouts/Layout';
@@ -21,6 +21,21 @@ const CartPage = () => {
     removeFromCart,
     clearCart 
   } = useCart();
+  
+  // Selected items for checkout
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  
+  // Calculate selected total
+  const selectedTotal = useMemo(() => {
+    return cartItems
+      .filter(item => selectedItems.has(item.variantId))
+      .reduce((sum, item) => {
+        const price = item.product?.variant?.price || 0;
+        return sum + (price * item.quantity);
+      }, 0);
+  }, [cartItems, selectedItems]);
+  
+  const selectedCount = selectedItems.size;
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -41,10 +56,11 @@ const CartPage = () => {
     }
   }, [updateCartItem]);
 
-  const handleRemoveItem = useCallback((variantId) => {
-    if (window.confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-      removeFromCart(variantId);
+  const handleRemoveItem = useCallback((variantId, skipConfirm = false) => {
+    if (skipConfirm || window.confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+      return removeFromCart(variantId);
     }
+    return Promise.resolve();
   }, [removeFromCart]);
 
   const handleClearCart = useCallback(() => {
@@ -53,13 +69,47 @@ const CartPage = () => {
     }
   }, [clearCart]);
 
+  const handleToggleItem = useCallback((variantId) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(variantId)) {
+        newSet.delete(variantId);
+      } else {
+        newSet.add(variantId);
+      }
+      return newSet;
+    });
+  }, []);
+  
+  const handleToggleAll = useCallback(() => {
+    if (selectedItems.size === cartItems.length) {
+      // Deselect all
+      setSelectedItems(new Set());
+    } else {
+      // Select all
+      setSelectedItems(new Set(cartItems.map(item => item.variantId)));
+    }
+  }, [cartItems, selectedItems.size]);
+
   const handleCheckout = () => {
     if (!isAuthenticated) {
       toast.error('Vui lòng đăng nhập để thanh toán');
       navigate('/login', { state: { from: '/cart' } });
       return;
     }
-    navigate('/checkout');
+    
+    if (selectedItems.size === 0) {
+      toast.error('Vui lòng chọn ít nhất một sản phẩm để thanh toán');
+      return;
+    }
+    
+    // Store selected items in session or pass via state
+    navigate('/checkout', { 
+      state: { 
+        selectedItems: Array.from(selectedItems),
+        items: cartItems.filter(item => selectedItems.has(item.variantId))
+      } 
+    });
   };
 
   if (!cartItems || cartItems.length === 0) {
@@ -103,6 +153,9 @@ const CartPage = () => {
               <CartItemsList
                 items={cartItems}
                 count={cartCount}
+                selectedItems={selectedItems}
+                onToggleItem={handleToggleItem}
+                onToggleAll={handleToggleAll}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemove={handleRemoveItem}
                 onClearAll={handleClearCart}
@@ -122,7 +175,9 @@ const CartPage = () => {
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <CartSummary
-                total={cartTotal}
+                total={selectedTotal}
+                selectedCount={selectedCount}
+                totalCount={cartCount}
                 formatPrice={formatPrice}
                 onCheckout={handleCheckout}
               />

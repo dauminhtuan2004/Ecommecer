@@ -1,54 +1,60 @@
-const CART_STORAGE_KEY = 'shopping_cart';
 
-/**
- * Load cart from localStorage
- */
+
+
+const CART_STORAGE_KEY = 'shopping_cart';
+const DEBOUNCE_DELAY = 300;
+
 export const loadCartFromStorage = () => {
   try {
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (savedCart) {
-      const parsed = JSON.parse(savedCart);
-      // Handle both old format {items: []} and new format []
-      return Array.isArray(parsed) ? parsed : (parsed.items || []);
-    }
-  } catch (error) {
-    console.error('Error loading cart:', error);
+    if (!savedCart) return [];
+    
+    const parsed = JSON.parse(savedCart);
+    return Array.isArray(parsed) ? parsed : (parsed.items || []);
+  } catch {
+    return [];
   }
-  return [];
 };
 
-/**
- * Save cart to localStorage - Debounced
- */
+const serializeCartItem = (item) => ({
+  variantId: item.variantId,
+  quantity: item.quantity,
+  product: item.product ? {
+    id: item.product.id,
+    name: item.product.name,
+    image: item.product.image,
+    variant: item.product.variant ? {
+      id: item.product.variant.id,
+      price: item.product.variant.price,
+      size: item.product.variant.size,
+      color: item.product.variant.color,
+      stock: item.product.variant.stock,
+    } : null
+  } : null,
+  addedAt: item.addedAt
+});
+
 let saveTimeout;
 export const saveCartToStorage = (items) => {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-      console.log('Cart saved:', items.length, 'items');
+      const plainItems = Array.isArray(items) ? items.map(serializeCartItem) : [];
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(plainItems));
     } catch (error) {
-      console.error('Error saving cart:', error);
+      console.error('Cart save error:', error);
     }
-  }, 300);
+  }, DEBOUNCE_DELAY);
 };
 
-/**
- * Clear cart from localStorage
- */
 export const clearCartStorage = () => {
   try {
     localStorage.removeItem(CART_STORAGE_KEY);
-    console.log('Cart storage cleared');
   } catch (error) {
-    console.error('Error clearing cart:', error);
+    console.error('Cart clear error:', error);
   }
 };
 
-/**
- * Check if user is logged in
- */
 export const isUserLoggedIn = () => {
-  const token = localStorage.getItem('token');
-  return !!token;
+  return !!localStorage.getItem('token');
 };
