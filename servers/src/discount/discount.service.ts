@@ -40,7 +40,6 @@ export class DiscountService {
 
     const where: any = {};
 
-    // Search filter
     if (search) {
       where.OR = [
         { code: { contains: search, mode: 'insensitive' } },
