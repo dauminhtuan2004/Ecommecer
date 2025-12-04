@@ -13,7 +13,6 @@ export class DiscountService {
       throw new BadRequestException('Phải có ít nhất percentage hoặc fixedAmount');
     }
 
-    // Validate: không được có cả hai cùng lúc
     if (createDiscountDto.percentage && createDiscountDto.fixedAmount) {
       throw new BadRequestException('Chỉ được chọn percentage hoặc fixedAmount, không được cả hai');
     }
