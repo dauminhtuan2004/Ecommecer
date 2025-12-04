@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
-import Button from '../../common/Button';
+import Button from '../common/Button';
 
 const HeroBanner = ({ slides = [] }) => {
   const [currentSlide, setCurrentSlide] = useState(0);

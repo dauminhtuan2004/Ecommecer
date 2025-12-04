@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '../../../components/layouts/Layout';
-import { ProductImageGallery, ProductDetails } from '../../../components/customer/products/ProductDetail';
+import { ProductImageGallery, ProductDetails } from '../../../components/products/ProductDetail';
 import { productService } from '../../../services/productService';
 import { useCart } from '../../../hooks/useCart';
 import toast from 'react-hot-toast';

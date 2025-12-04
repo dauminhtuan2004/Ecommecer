@@ -38,10 +38,15 @@ export const store = configureStore({
 
 // Enable hot module replacement for reducers in development
 if (import.meta.env.DEV && import.meta.hot) {
-  import.meta.hot.accept('./slices/cartSlice', () => {
-    store.replaceReducer({
-      cart: cartReducer,
-    });
+  import.meta.hot.accept('./slices/cartSlice', async () => {
+    const { default: newCartReducer } = await import('./slices/cartSlice');
+    const { combineReducers } = await import('@reduxjs/toolkit');
+    
+    store.replaceReducer(
+      combineReducers({
+        cart: newCartReducer,
+      })
+    );
   });
 }
 

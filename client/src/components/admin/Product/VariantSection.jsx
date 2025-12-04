@@ -1,5 +1,6 @@
 import { Plus, Trash2, AlertTriangle } from 'lucide-react';
 import Button from '../../common/Button';
+import { formatNumber } from '../../../utils/formatters';
 
 const VariantSection = ({
   variants,
@@ -39,7 +40,7 @@ const VariantSection = ({
           <div className="text-xs text-amber-800">
             <p className="font-semibold mb-0.5">💡 Lưu ý</p>
             <ul className="list-disc list-inside space-y-0.5 text-xs">
-              <li>Nếu không nhập giá, sẽ sử dụng <strong>Giá Cơ Bản</strong> ({new Intl.NumberFormat('vi-VN').format(basePrice || 0)} VND)</li>
+              <li>Nếu không nhập giá, sẽ sử dụng <strong>Giá Cơ Bản</strong> ({formatNumber(basePrice || 0)} VND)</li>
               <li>SKU giúp quản lý kho hàng dễ dàng hơn</li>
               <li>Ít nhất phải có <strong>1 variant</strong> có dữ liệu</li>
             </ul>
@@ -182,7 +183,7 @@ const VariantSection = ({
             {/* Preview giá nếu không nhập */}
             {!variant.price && basePrice && (
               <div className="mt-3 text-xs text-gray-600 bg-blue-50 border border-blue-200 rounded px-3 py-2">
-                💰 Giá áp dụng: <strong>{new Intl.NumberFormat('vi-VN').format(basePrice)} VND</strong> (giá cơ bản)
+                💰 Giá áp dụng: <strong>{formatNumber(basePrice)} VND</strong> (giá cơ bản)
               </div>
             )}
           </div>

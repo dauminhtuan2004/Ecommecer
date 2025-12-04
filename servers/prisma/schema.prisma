@@ -185,6 +185,9 @@ model Order {
   userId           Int
   addressId        Int?
   shippingMethodId Int?
+  shippingAddress  String?         // Địa chỉ giao hàng dạng text
+  shippingInfo     Json?           // Thông tin người nhận {fullName, phone, note}
+  paymentMethod    PaymentMethod?  @default(CASH) // Phương thức thanh toán
   total            Float
   taxAmount        Float           @default(0)
   status           OrderStatus     @default(PENDING)

@@ -50,4 +50,11 @@ export class CartController {
   removeItem(@Request() req, @Param('variantId') variantId: string) {
     return this.cartService.removeItem(req.user.userId, { variantId: +variantId });
   }
+
+  @Delete()
+  @ApiOperation({ summary: 'Clear entire cart' })
+  @ApiResponse({ status: 200, description: 'Cart cleared successfully' })
+  clearCart(@Request() req) {
+    return this.cartService.clearCart(req.user.userId);
+  }
 }

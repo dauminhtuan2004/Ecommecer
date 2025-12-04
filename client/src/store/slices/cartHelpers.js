@@ -10,7 +10,20 @@ export const loadCartFromStorage = () => {
     if (!savedCart) return [];
     
     const parsed = JSON.parse(savedCart);
-    return Array.isArray(parsed) ? parsed : (parsed.items || []);
+    const items = Array.isArray(parsed) ? parsed : (parsed.items || []);
+    
+    // Deduplicate by variantId - merge quantities if duplicate
+    const deduped = items.reduce((acc, item) => {
+      const existing = acc.find(i => i.variantId === item.variantId);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        acc.push(item);
+      }
+      return acc;
+    }, []);
+    
+    return deduped;
   } catch {
     return [];
   }
@@ -53,8 +66,4 @@ export const clearCartStorage = () => {
   } catch (error) {
     console.error('Cart clear error:', error);
   }
-};
-
-export const isUserLoggedIn = () => {
-  return !!localStorage.getItem('token');
 };

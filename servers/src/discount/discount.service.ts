@@ -117,22 +117,45 @@ export class DiscountService {
   }
 
   async validateDiscount(code: string) {
-    const discount = await this.findByCode(code);
+    const discount = await this.prisma.discount.findUnique({
+      where: { code: code.toUpperCase() },
+    });
+
+    if (!discount) {
+      return {
+        isValid: false,
+        message: 'Mã giảm giá không tồn tại',
+      };
+    }
+
     const now = new Date();
 
-    // Check if discount is active
+    // Check if discount is active (started and not expired)
     if (discount.startDate > now) {
-      throw new BadRequestException('Mã giảm giá chưa có hiệu lực');
+      return {
+        isValid: false,
+        message: `Mã giảm giá chưa có hiệu lực (từ ${discount.startDate.toLocaleDateString('vi-VN')})`,
+      };
     }
 
     if (discount.endDate && discount.endDate < now) {
-      throw new BadRequestException('Mã giảm giá đã hết hạn');
+      return {
+        isValid: false,
+        message: 'Mã giảm giá đã hết hạn',
+      };
     }
 
+    // Valid discount
     return {
-      valid: true,
-      discount,
+      isValid: true,
       message: 'Mã giảm giá hợp lệ',
+      discount: {
+        id: discount.id,
+        code: discount.code,
+        description: discount.description,
+        discountType: discount.percentage ? 'PERCENTAGE' : 'FIXED',
+        discountValue: discount.percentage || discount.fixedAmount,
+      },
     };
   }
 

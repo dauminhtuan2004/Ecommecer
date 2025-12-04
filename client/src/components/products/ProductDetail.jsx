@@ -1,7 +1,8 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { FaStar } from 'react-icons/fa';
 import { FaShoppingCart, FaHeart } from 'react-icons/fa';
-import Button from '../../common/Button';
+import Button from '../common/Button';
+import { formatPrice, calculateDiscountPercent } from '../../utils/formatters';
 
 export const ProductImageGallery = ({ images, selectedImage, onImageSelect, onPrevImage, onNextImage, productName }) => {
   if (!images || images.length === 0) {
@@ -76,13 +77,6 @@ export const ProductDetails = ({
   onQuantityChange,
   onAddToCart
 }) => {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
-  };
-
   const getSizes = () => {
     if (!product?.variants) return [];
     return [...new Set(product.variants.map(v => v.size).filter(Boolean))];
@@ -231,10 +225,7 @@ export const ProductDetails = ({
           <span className="text-gray-600">Danh mục:</span>
           <span className="font-medium">{product.category?.name || 'N/A'}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Thương hiệu:</span>
-          <span className="font-medium">{product.brand?.name || 'N/A'}</span>
-        </div>
+      
       </div>
     </div>
   );

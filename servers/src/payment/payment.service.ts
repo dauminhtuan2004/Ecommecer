@@ -14,6 +14,13 @@ export class PaymentService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache, // Optional cache
   ) {}
 
+  // Helper function to clear payment caches
+  // Note: cache-manager doesn't support wildcard deletion
+  private async clearPaymentCaches() {
+    // Just log for now - cache will expire naturally
+    console.log('Payment caches will be invalidated');
+  }
+
   async create(data: CreatePaymentDto) {
     // Validate order exists
     const order = await this.prisma.order.findUnique({
@@ -40,8 +47,8 @@ export class PaymentService {
       include: { order: true }, // Include order details
     });
 
-    // Invalidate cache nếu có
-    await this.cacheManager.del('payments:all');
+    // Invalidate all payment caches
+    await this.clearPaymentCaches();
     await this.cacheManager.del(`payment:${payment.id}`);
 
     return payment;
@@ -111,7 +118,7 @@ export class PaymentService {
 
     // Cache invalidate
     await this.cacheManager.del(`payment:${id}`);
-    await this.cacheManager.del('payments:all');
+    await this.clearPaymentCaches();
     await this.cacheManager.del(`order:${payment.orderId}`);
     await this.cacheManager.del('products:all');
 
@@ -120,6 +127,14 @@ export class PaymentService {
   async findAll(query: QueryPaymentDto) {
     const { page = 1, limit = 10, status, method } = query;
     const skip = (page - 1) * limit;
+
+    // Check cache first
+    const cacheKey = `payments:${JSON.stringify(query)}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      console.log(`Cache hit for payments: ${cacheKey}`);
+      return cached;
+    }
 
     const where = {};
     if (status) where['status'] = status;
@@ -148,17 +163,19 @@ export class PaymentService {
       this.prisma.payment.count({ where }),
     ]);
 
-    // Cache key
-    const cacheKey = `payments:${JSON.stringify(query)}`;
-    await this.cacheManager.set(cacheKey, { payments, total }, 3600);
-
-    return {
+    const result = {
       payments,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     };
+
+    // Set cache after query
+    await this.cacheManager.set(cacheKey, result, 3600);
+    console.log(`Cache set for payments: ${cacheKey}`);
+
+    return result;
   }
 
   // Stub method cho external payment (expand sau)

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FaHeart, FaEye, FaStar } from 'react-icons/fa';
-import Button from '../../common/Button';
+import Button from '../common/Button';
+import { formatPrice, calculateDiscountPercent } from '../../utils/formatters';
 
 const ProductCard = ({ product }) => {
   const {
@@ -25,17 +26,7 @@ const ProductCard = ({ product }) => {
   const productOriginalPrice = originalPrice;
   
   // Tính % giảm giá
-  const discountPercent = productOriginalPrice 
-    ? Math.round(((productOriginalPrice - productPrice) / productOriginalPrice) * 100)
-    : discount || 0;
-
-  const formatPrice = (priceValue) => {
-    if (!priceValue || isNaN(priceValue)) return 'Liên hệ';
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(priceValue);
-  };
+  const discountPercent = calculateDiscountPercent(productOriginalPrice, productPrice) || discount || 0;
 
   return (
     <div className="group relative bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">

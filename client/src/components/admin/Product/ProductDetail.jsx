@@ -1,12 +1,7 @@
 import { Package, Layers, Edit2, Trash2 } from 'lucide-react';
+import { formatPrice } from '../../../utils/formatters';
 
 const ProductDetails = ({ product, onEditVariant, onDeleteVariant }) => {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
 
   const mainImages = product.images?.filter(img => !img.variantId) || [];
 

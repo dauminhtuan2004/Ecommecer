@@ -24,6 +24,20 @@ export class CreateOrderDto {
   @IsPositive()
   addressId?: number;
 
+  @ApiProperty({ example: '123 Nguyen Hue, Ward 1, District 1, Ho Chi Minh City', description: 'Địa chỉ giao hàng dạng chuỗi (tùy chọn)', required: false })
+  @IsOptional()
+  @IsString()
+  shippingAddress?: string;
+
+  @ApiProperty({ example: { fullName: 'Nguyen Van A', phone: '0901234567', note: 'Gọi trước khi giao' }, description: 'Thông tin người nhận (tùy chọn)', required: false })
+  @IsOptional()
+  shippingInfo?: any;
+
+  @ApiProperty({ example: 'CASH', description: 'Phương thức thanh toán', required: false })
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
+
   @ApiProperty({ example: 1, description: 'ID phương thức vận chuyển (tùy chọn)', required: false })
   @Type(() => Number)
   @IsOptional()
@@ -36,9 +50,10 @@ export class CreateOrderDto {
   @IsString()
   discountCode?: string;
 
-  @ApiProperty({ type: [OrderItemDto], description: 'Danh sách items từ cart', required: true })
+  @ApiProperty({ type: [OrderItemDto], description: 'Danh sách items (OPTIONAL - nếu không có sẽ lấy từ cart)', required: false })
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
-  items: OrderItemDto[];
+  items?: OrderItemDto[];
 }

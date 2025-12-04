@@ -1,6 +1,21 @@
 import api from '../config/api.config';
 
 const orderService = {
+  // Create new order (customer)
+  createOrder: async (orderData) => {
+    return await api.post('/orders', orderData);
+  },
+
+  // Get my orders (customer)
+  getMyOrders: async () => {
+    return await api.get('/orders/my-orders');
+  },
+
+  // Get order by ID (customer & admin)
+  getOrderById: async (id) => {
+    return await api.get(`/orders/${id}`);
+  },
+
   // Get all orders (admin can see all, users see their own)
   getOrders: async (params = {}) => {
     const response = await api.get('/orders', { params });
@@ -17,6 +32,11 @@ const orderService = {
   updateOrderStatus: async (id, status) => {
     const response = await api.put(`/orders/${id}`, { status });
     return response.data;
+  },
+
+  // Cancel order (customer - only when PENDING)
+  cancelOrder: async (id) => {
+    return await api.put(`/orders/${id}/cancel`);
   },
 
   // Get order statistics

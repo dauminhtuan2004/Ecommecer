@@ -7,6 +7,7 @@ import ProductTable from '../../../components/admin/Product/ProductTable';
 import ProductForm from '../../../components/admin/Product/ProductForm';
 import VariantManager from '../../../components/admin/Product/VariantModal';
 import DeleteConfirmModal from '../../../components/common/DeleteConfirm';
+import { formatPrice, getTotalStock } from '../../../utils/formatters';
 
 const ProductsPage = () => {
   const {
@@ -50,19 +51,6 @@ const ProductsPage = () => {
     setManagingVariantsProduct,
     setShowVariantManager
   } = useProductActions({ loadProducts, products });
-
-  // Helper functions
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
-  };
-
-  const getTotalStock = (variants) => {
-    if (!variants || variants.length === 0) return 0;
-    return variants.reduce((sum, v) => sum + (v.stock || 0), 0);
-  };
 
   // Selection handlers
   const handleSelectAll = (e) => {

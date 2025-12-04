@@ -5,6 +5,7 @@ import ProductDetails from "./ProductDetail";
 import Button from "../../common/Button";
 import { Edit, MoreVertical, Layers, ChevronDown, ChevronUp, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { formatPrice, getTotalStock, getStockStatus } from '../../../utils/formatters';
 
 const ProductRow = ({
   product,
@@ -18,35 +19,9 @@ const ProductRow = ({
   const [showActions, setShowActions] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
-  const getStockStatus = (stock) => {
-    const n = Number(stock) || 0;
-    if (n === 0)
-      return {
-        text: "Hết hàng",
-        color: "text-rose-700 bg-rose-50 border-rose-200",
-      };
-    if (n < 10)
-      return {
-        text: "Sắp hết",
-        color: "text-amber-700 bg-amber-50 border-amber-200",
-      };
-    return {
-      text: "Còn hàng",
-      color: "text-emerald-700 bg-emerald-50 border-emerald-200",
-    };
-  };
-
-  const totalStock =
-    product.variants && product.variants.length > 0
-      ? product.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
-      : Number(product.stock) || 0;
+  const totalStock = product.variants && product.variants.length > 0
+    ? getTotalStock(product.variants)
+    : Number(product.stock) || 0;
   const stockStatus = getStockStatus(totalStock);
   const hasVariants = product.variants && product.variants.length > 0;
 

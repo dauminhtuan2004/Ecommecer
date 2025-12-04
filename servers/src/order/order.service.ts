@@ -22,9 +22,32 @@ export class OrderService {
   ) {}
 
   async create(userId: number, dto: CreateOrderDto): Promise<any> {
-    const cart = await this.cartService.getCart(userId);
-    if (cart.cartItems.length === 0)
-      throw new BadRequestException('Cart empty');
+    // Get items from dto OR cart
+    let itemsToOrder;
+    if (dto.items && dto.items.length > 0) {
+      // Fetch prices from database for items from dto
+      const variantIds = dto.items.map(item => item.variantId);
+      const variants = await this.prisma.productVariant.findMany({
+        where: { id: { in: variantIds } }
+      });
+      
+      const variantPriceMap = new Map(variants.map(v => [v.id, v.price]));
+      
+      itemsToOrder = dto.items.map(item => ({
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: variantPriceMap.get(item.variantId) || 0
+      }));
+    } else {
+      const cart = await this.cartService.getCart(userId);
+      if (cart.cartItems.length === 0)
+        throw new BadRequestException('Cart empty');
+      itemsToOrder = cart.cartItems.map(item => ({
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: item.variant.price
+      }));
+    }
 
     let discount: any = null;
     if (dto.discountCode) {
@@ -35,8 +58,8 @@ export class OrderService {
         throw new BadRequestException('Invalid discount');
     }
 
-    const totalItems = cart.cartItems.reduce(
-      (sum, item) => sum + item.quantity * item.variant.price,
+    const totalItems = itemsToOrder.reduce(
+      (sum, item) => sum + item.quantity * item.price,
       0,
     );
     const taxAmount = totalItems * 0.1;
@@ -50,24 +73,41 @@ export class OrderService {
     const order = await this.prisma.order.create({
       data: {
         userId,
-        addressId: dto.addressId,
+        addressId: dto.addressId || null,
         shippingMethodId: dto.shippingMethodId || null,
+        shippingAddress: dto.shippingAddress || null,
+        shippingInfo: dto.shippingInfo || null,
+        paymentMethod: (dto.paymentMethod as any) || 'CASH',
         total: discountedTotal,
         taxAmount,
         discountId: discount ? discount.id : null,
         status: 'PENDING',
         orderItems: {
-          create: cart.cartItems.map((item) => ({
+          create: itemsToOrder.map((item) => ({
             variantId: item.variantId,
             quantity: item.quantity,
-            price: item.variant.price,
+            price: item.price,
           })),
         },
       },
-      include: { orderItems: { include: { variant: true } }, payment: true },
+      include: { 
+        orderItems: { 
+          include: { 
+            variant: { 
+              include: { product: true, images: true } 
+            } 
+          } 
+        }, 
+        payment: true,
+        user: true
+      },
     });
 
-    await this.cartService.clearCart(userId);
+    // Only clear cart if items were from cart (not from dto)
+    if (!dto.items || dto.items.length === 0) {
+      await this.cartService.clearCart(userId);
+    }
+    
     await this.cacheManager.del(`orders:${userId}:all`);
     console.log(`Cache invalidated for orders of user ${userId} after create`);
 
@@ -90,7 +130,14 @@ export class OrderService {
         take: limit,
         include: {
           orderItems: {
-            include: { variant: { include: { product: true } } },
+            include: { 
+              variant: { 
+                include: { 
+                  product: true,
+                  images: true
+                } 
+              } 
+            },
           },
           payment: true,
           address: true,
@@ -128,10 +175,20 @@ export class OrderService {
     order = await this.prisma.order.findUnique({
       where: { id },
       include: {
-        orderItems: { include: { variant: true } },
+        orderItems: { 
+          include: { 
+            variant: { 
+              include: { 
+                product: true,
+                images: true
+              } 
+            } 
+          } 
+        },
         payment: true,
         address: true,
         discount: true,
+        user: true
       },
     });
 
@@ -161,6 +218,29 @@ export class OrderService {
     console.log(`Cache invalidated for order ${id} after remove`);
 
     return removed;
+  }
+
+  async cancelOrder(orderId: number, userId: number): Promise<any> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.userId !== userId) throw new BadRequestException('Not your order');
+    if (order.status !== 'PENDING') throw new BadRequestException('Can only cancel PENDING orders');
+
+    const cancelled = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'CANCELLED' },
+      include: {
+        orderItems: { include: { variant: { include: { product: true } } } },
+        user: true
+      }
+    });
+
+    await this.cacheManager.del(`order:${orderId}`);
+    await this.cacheManager.del(`orders:${userId}:all`);
+    console.log(`Cache invalidated for order ${orderId} after cancel`);
+
+    return cancelled;
   }
 
   async applyDiscount(orderId: number, dto: ApplyDiscountDto): Promise<any> {

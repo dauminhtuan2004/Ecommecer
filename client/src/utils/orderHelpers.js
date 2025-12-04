@@ -1,21 +1,10 @@
+import { formatPrice, formatDateTime } from './formatters';
+
 // Format số tiền
-export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(amount);
-};
+export const formatCurrency = formatPrice;
 
 // Format ngày tháng
-export const formatDate = (date) => {
-  return new Intl.DateTimeFormat('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date));
-};
+export const formatDate = formatDateTime;
 
 // Status variants
 export const statusVariants = {

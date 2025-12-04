@@ -51,6 +51,21 @@ export class OrderController {
     return this.orderService.create(req.user.userId, body);
   }
 
+  @Get('my-orders')
+  @ApiOperation({ summary: 'Get current user orders' })
+  @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] })
+  @ApiResponse({ status: 200, description: 'List of user orders' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMyOrders(@Query() query: QueryOrderDto, @Req() req: any) {
+    const mergedQuery = {
+      ...query,
+      userId: req.user.userId,
+      page: 1,
+      limit: 1000
+    };
+    return this.orderService.findAll(mergedQuery);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get user orders' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -94,6 +109,16 @@ export class OrderController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   update(@Param('id') id: string, @Body() body: UpdateOrderDto) {
     return this.orderService.update(+id, body);
+  }
+
+  @Put(':id/cancel')
+  @ApiOperation({ summary: 'Cancel order (only PENDING status)' })
+  @ApiParam({ name: 'id', description: 'ID order', type: Number })
+  @ApiResponse({ status: 200, description: 'Order cancelled successfully' })
+  @ApiResponse({ status: 400, description: 'Cannot cancel order' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async cancelOrder(@Param('id') id: string, @Req() req: any) {
+    return this.orderService.cancelOrder(+id, req.user.userId);
   }
 
   @Post(':id/discount')

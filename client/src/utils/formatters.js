@@ -1,0 +1,109 @@
+/**
+ * Format price to Vietnamese currency
+ * @param {number} price - Price value
+ * @returns {string} Formatted price string
+ */
+export const formatPrice = (price) => {
+  if (!price || isNaN(price)) return 'Liên hệ';
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  }).format(price);
+};
+
+/**
+ * Format number with thousand separators
+ * @param {number} number - Number to format
+ * @returns {string} Formatted number string
+ */
+export const formatNumber = (number) => {
+  if (!number || isNaN(number)) return '0';
+  return new Intl.NumberFormat('vi-VN').format(number);
+};
+
+/**
+ * Format date to Vietnamese format
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date string
+ */
+export const formatDate = (date) => {
+  if (!date) return '';
+  return new Intl.DateTimeFormat('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(date));
+};
+
+/**
+ * Format datetime to Vietnamese format
+ * @param {string|Date} date - Datetime to format
+ * @returns {string} Formatted datetime string
+ */
+export const formatDateTime = (date) => {
+  if (!date) return '';
+  return new Intl.DateTimeFormat('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(date));
+};
+
+/**
+ * Calculate discount percentage
+ * @param {number} originalPrice - Original price
+ * @param {number} currentPrice - Current price
+ * @returns {number} Discount percentage
+ */
+export const calculateDiscountPercent = (originalPrice, currentPrice) => {
+  if (!originalPrice || !currentPrice) return 0;
+  return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+};
+
+/**
+ * Truncate text with ellipsis
+ * @param {string} text - Text to truncate
+ * @param {number} maxLength - Maximum length
+ * @returns {string} Truncated text
+ */
+export const truncateText = (text, maxLength = 100) => {
+  if (!text || text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
+/**
+ * Calculate total stock from product variants
+ * @param {Array} variants - Array of product variants
+ * @returns {number} Total stock count
+ */
+export const getTotalStock = (variants) => {
+  if (!variants || variants.length === 0) return 0;
+  return variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+};
+
+/**
+ * Get stock status with color styling
+ * @param {number} stock - Stock quantity
+ * @returns {Object} Status object with text and color class
+ */
+export const getStockStatus = (stock) => {
+  const n = Number(stock) || 0;
+  if (n === 0) {
+    return {
+      text: 'Hết hàng',
+      color: 'text-rose-700 bg-rose-50 border-rose-200'
+    };
+  }
+  if (n < 10) {
+    return {
+      text: 'Sắp hết',
+      color: 'text-amber-700 bg-amber-50 border-amber-200'
+    };
+  }
+  return {
+    text: 'Còn hàng',
+    color: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+  };
+};

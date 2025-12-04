@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Layout from "../../../components/layouts/Layout";
-import HeroBanner from "../../../components/customer/home/HeroBanner";
-import FeaturedCategories from "../../../components/customer/home/FeaturedCategories";
-import FeaturedProducts from "../../../components/customer/home/FeaturedProducts";
-import PromoBanner from "../../../components/customer/home/PromoBanner";
-import Features from "../../../components/customer/home/Features";
+import HeroBanner from "../../../components/home/HeroBanner";
+import FeaturedCategories from "../../../components/home/FeaturedCategories";
+import FeaturedProducts from "../../../components/home/FeaturedProducts";
+import PromoBanner from "../../../components/home/PromoBanner";
+import Features from "../../../components/home/Features";
 import { useHomeData } from "../../../hooks/useHomeData";
 import toast from "react-hot-toast";
 

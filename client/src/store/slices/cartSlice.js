@@ -86,7 +86,18 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        // Deduplicate items by variantId
+        const items = action.payload;
+        const deduped = items.reduce((acc, item) => {
+          const existing = acc.find(i => i.variantId === item.variantId);
+          if (existing) {
+            existing.quantity += item.quantity;
+          } else {
+            acc.push(item);
+          }
+          return acc;
+        }, []);
+        state.items = deduped;
         saveCartToStorage(state.items);
       })
       .addCase(fetchCart.rejected, (state, action) => {

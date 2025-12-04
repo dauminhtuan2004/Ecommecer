@@ -2,8 +2,8 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Sidebar from './SideBar';
-import Header from '../customer/Header';
-import Footer from '../customer/Footer';
+import Header from './Header';
+import Footer from './Footer';
 
 const Layout = ({ children, showSidebar = false }) => {
   const { user } = useAuth(); 

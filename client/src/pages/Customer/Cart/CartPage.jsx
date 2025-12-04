@@ -9,6 +9,7 @@ import CartSummary from '../../../components/cart/CartSummary';
 import { useAuth } from '../../../hooks/useAuth';
 import { useCart } from '../../../hooks/useCart';
 import toast from 'react-hot-toast';
+import { formatPrice } from '../../../utils/formatters';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -36,13 +37,6 @@ const CartPage = () => {
   }, [cartItems, selectedItems]);
   
   const selectedCount = selectedItems.size;
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
-  };
 
   const handleUpdateQuantity = useCallback((variantId, currentQuantity, delta) => {
     if (delta === 0) {

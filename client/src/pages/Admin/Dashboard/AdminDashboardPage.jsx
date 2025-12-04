@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import Loading from '../../../components/common/Loading';
 import Badge from '../../../components/common/Badge';
 import StatsCard from '../../../components/common/StatsCard';
+import { formatPrice, formatDateTime } from '../../../utils/formatters';
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -49,22 +50,8 @@ const AdminDashboardPage = () => {
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount);
-  };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const formatCurrency = formatPrice;
+  const formatDate = formatDateTime;
 
   const getOrderStatusVariant = (status) => {
     const variants = {

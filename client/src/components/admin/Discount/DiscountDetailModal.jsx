@@ -1,7 +1,7 @@
 import Modal from '../../common/Modal';
 import Badge from '../../common/Badge';
+import { formatDateTime, formatDate } from '../../../utils/formatters';
 import {
-  formatDate,
   formatDateShort,
   getStatusVariant,
   getStatusText,

@@ -57,7 +57,16 @@ const MobileMenu = ({ searchOpen, mobileMenuOpen, categories }) => {
             <Link to="/contact" className="block py-2 text-gray-700 hover:text-blue-600 font-medium">
               Liên Hệ
             </Link>
-            {!user && (
+            {user ? (
+              <>
+                <Link to="/orders" className="block py-2 text-gray-700 hover:text-blue-600 font-medium">
+                  📦 Đơn hàng của tôi
+                </Link>
+                <Link to="/profile" className="block py-2 text-gray-700 hover:text-blue-600 font-medium">
+                  👤 Hồ sơ
+                </Link>
+              </>
+            ) : (
               <Link to="/login" className="block py-2 text-blue-600 font-bold">
                 Đăng nhập
               </Link>

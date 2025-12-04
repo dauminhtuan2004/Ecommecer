@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaFilter, FaTimes } from 'react-icons/fa';
-import Button from '../../common/Button';
-import Select from '../../common/Select';
+import Button from '../common/Button';
+import Select from '../common/Select';
 
 const ProductFilter = ({ 
   categories = [], 
