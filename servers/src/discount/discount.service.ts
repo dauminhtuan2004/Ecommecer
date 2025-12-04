@@ -9,7 +9,6 @@ export class DiscountService {
   constructor(private prisma: PrismaService) {}
 
   async create(createDiscountDto: CreateDiscountDto) {
-    // Validate: phải có ít nhất percentage hoặc fixedAmount
     if (!createDiscountDto.percentage && !createDiscountDto.fixedAmount) {
       throw new BadRequestException('Phải có ít nhất percentage hoặc fixedAmount');
     }
