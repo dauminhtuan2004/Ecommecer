@@ -16,8 +16,6 @@ export class DiscountService {
     if (createDiscountDto.percentage && createDiscountDto.fixedAmount) {
       throw new BadRequestException('Chỉ được chọn percentage hoặc fixedAmount, không được cả hai');
     }
-
-    // Check code đã tồn tại
     const existing = await this.prisma.discount.findUnique({
       where: { code: createDiscountDto.code.toUpperCase() },
     });
